@@ -1,0 +1,20 @@
+# Build artifacts
+/_build/
+/deps/
+/doc/
+/cover/
+/.fetch
+/tmp/
+*.ez
+erl_crash.dump
+
+# Editors and tools
+.elixir_ls/
+.lexical/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Local environment
+.env
