@@ -8,6 +8,15 @@
 *.ez
 erl_crash.dump
 
+# Release tarballs (mix hex.build)
+job_tracker-*.tar
+
+# Assets produced by esbuild and tailwind
+/priv/static/assets/
+/priv/static/cache_manifest.json
+/assets/node_modules/
+npm-debug.log
+
 # Editors and tools
 .elixir_ls/
 .lexical/
