@@ -1,4 +1,8 @@
 defmodule JobTracker.Accounts.UserToken do
+  @moduledoc """
+  Session, confirmation and password reset tokens.
+  """
+
   use Ecto.Schema
   import Ecto.Query
   alias JobTracker.Accounts.UserToken

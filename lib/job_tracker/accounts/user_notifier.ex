@@ -1,4 +1,8 @@
 defmodule JobTracker.Accounts.UserNotifier do
+  @moduledoc """
+  Emails sent for account confirmation, password resets and email changes.
+  """
+
   import Swoosh.Email
 
   alias JobTracker.Mailer

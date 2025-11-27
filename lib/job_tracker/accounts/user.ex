@@ -1,4 +1,8 @@
 defmodule JobTracker.Accounts.User do
+  @moduledoc """
+  A registered user with their preferences.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

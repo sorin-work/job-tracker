@@ -1,9 +1,9 @@
 defmodule JobTrackerWeb.UserAuthTest do
   use JobTrackerWeb.ConnCase, async: true
 
-  alias Phoenix.LiveView
   alias JobTracker.Accounts
   alias JobTrackerWeb.UserAuth
+  alias Phoenix.LiveView
   import JobTracker.AccountsFixtures
 
   @remember_me_cookie "_job_tracker_web_user_remember_me"

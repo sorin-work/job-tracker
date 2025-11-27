@@ -6,7 +6,7 @@ defmodule JobTracker.Accounts do
   import Ecto.Query, warn: false
   alias JobTracker.Repo
 
-  alias JobTracker.Accounts.{User, UserToken, UserNotifier}
+  alias JobTracker.Accounts.{User, UserNotifier, UserToken}
 
   ## Database getters
 

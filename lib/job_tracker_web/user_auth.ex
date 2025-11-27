@@ -1,4 +1,9 @@
 defmodule JobTrackerWeb.UserAuth do
+  @moduledoc """
+  Session handling: logging in and out, remember-me cookies, and the plugs and
+  `on_mount` hooks that protect routes and LiveViews.
+  """
+
   use JobTrackerWeb, :verified_routes
 
   import Plug.Conn
