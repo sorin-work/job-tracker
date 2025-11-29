@@ -20,7 +20,7 @@ defmodule JobTracker.Companies do
     Company
     |> where(user_id: ^user_id)
     |> filter_search(opts[:search])
-    |> order_by([c], asc: c.name)
+    |> order_by([c], asc: fragment("lower(?)", c.name))
     |> Repo.all()
   end
 
