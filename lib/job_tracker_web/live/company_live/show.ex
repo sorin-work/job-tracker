@@ -49,6 +49,16 @@ defmodule JobTrackerWeb.CompanyLive.Show do
       </:actions>
     </.header>
 
+    <p :if={@company.website} class="mt-2 text-sm">
+      <a
+        href={@company.website}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-brand hover:underline"
+      >
+        {@company.website}
+      </a>
+    </p>
     <p :if={@company.notes} class="mt-4 whitespace-pre-line text-sm text-zinc-700">
       {@company.notes}
     </p>
