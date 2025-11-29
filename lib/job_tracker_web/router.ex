@@ -63,6 +63,11 @@ defmodule JobTrackerWeb.Router do
       on_mount: [{JobTrackerWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+      live "/companies", CompanyLive.Index, :index
+      live "/companies/new", CompanyLive.Index, :new
+      live "/companies/:id/edit", CompanyLive.Index, :edit
+      live "/companies/:id", CompanyLive.Show, :show
+      live "/companies/:id/show/edit", CompanyLive.Show, :edit
     end
   end
 

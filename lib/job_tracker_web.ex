@@ -89,6 +89,7 @@ defmodule JobTrackerWeb do
       import Phoenix.HTML
       # Core UI components
       import JobTrackerWeb.CoreComponents
+      import JobTrackerWeb.AppComponents
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
