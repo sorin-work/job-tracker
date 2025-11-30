@@ -3,6 +3,7 @@ defmodule JobTracker.CompaniesTest do
 
   import JobTracker.AccountsFixtures
   import JobTracker.CompaniesFixtures
+  import JobTracker.PipelineFixtures
 
   alias JobTracker.Companies
   alias JobTracker.Companies.Company
@@ -12,12 +13,20 @@ defmodule JobTracker.CompaniesTest do
   end
 
   describe "list_companies/2" do
-    test "returns only the user's companies ordered by name", %{user: user} do
-      company_fixture(user, name: "beta")
-      company_fixture(user, name: "Alpha")
+    test "returns only the user's companies, ordered by name, with application counts", %{
+      user: user
+    } do
+      beta = company_fixture(user, name: "beta")
+      alpha = company_fixture(user, name: "Alpha")
       company_fixture(user_fixture(), name: "Other")
+      application_fixture(user, company_id: beta.id)
+      application_fixture(user, company_id: beta.id)
 
-      assert [%{name: "Alpha"}, %{name: "beta"}] = Companies.list_companies(user)
+      assert [%{id: alpha_id, application_count: 0}, %{id: beta_id, application_count: 2}] =
+               Companies.list_companies(user)
+
+      assert alpha_id == alpha.id
+      assert beta_id == beta.id
     end
 
     test "filters by name", %{user: user} do
@@ -50,9 +59,23 @@ defmodule JobTracker.CompaniesTest do
     end
   end
 
-  test "delete_company/1 deletes the company", %{user: user} do
-    company = company_fixture(user)
-    assert {:ok, _} = Companies.delete_company(company)
-    assert Companies.list_companies(user) == []
+  describe "find_or_create_company/2" do
+    test "creates a missing company", %{user: user} do
+      assert {:ok, %Company{name: "Initech"}} = Companies.find_or_create_company(user, "Initech")
+    end
+  end
+
+  describe "delete_company/1" do
+    test "deletes a company without applications", %{user: user} do
+      company = company_fixture(user)
+      assert {:ok, _} = Companies.delete_company(company)
+      assert Companies.list_companies(user) == []
+    end
+
+    test "refuses to delete a company that has applications", %{user: user} do
+      company = company_fixture(user)
+      application_fixture(user, company_id: company.id)
+      assert {:error, :has_applications} = Companies.delete_company(company)
+    end
   end
 end

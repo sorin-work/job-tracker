@@ -14,6 +14,7 @@ defmodule JobTracker.Companies.Company do
     field :notes, :string
 
     belongs_to :user, JobTracker.Accounts.User
+    has_many :job_applications, JobTracker.Pipeline.JobApplication
 
     timestamps(type: :utc_datetime)
   end
