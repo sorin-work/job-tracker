@@ -55,8 +55,18 @@ defmodule JobTrackerWeb.CompanyLive.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     company = Companies.get_company!(socket.assigns.current_user, id)
 
-    {:ok, _} = Companies.delete_company(company)
-    {:noreply, socket |> put_flash(:info, "Company deleted") |> load()}
+    case Companies.delete_company(company) do
+      {:ok, _} ->
+        {:noreply, socket |> put_flash(:info, "Company deleted") |> load()}
+
+      {:error, :has_applications} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "#{company.name} still has applications. Delete or move them first."
+         )}
+    end
   end
 
   @impl true
@@ -83,7 +93,9 @@ defmodule JobTrackerWeb.CompanyLive.Index do
     </form>
 
     <.empty_state :if={@companies == []} class="mt-6">
-      {if @search == "", do: "No companies yet.", else: "No companies match your search."}
+      {if @search == "",
+        do: "No companies yet. They're also added when you create an application.",
+        else: "No companies match your search."}
     </.empty_state>
 
     <.table
@@ -98,6 +110,7 @@ defmodule JobTrackerWeb.CompanyLive.Index do
       </:col>
       <:col :let={company} label="Industry">{company.industry || "—"}</:col>
       <:col :let={company} label="Location">{company.location || "—"}</:col>
+      <:col :let={company} label="Applications">{company.application_count}</:col>
       <:action :let={company}>
         <.link patch={~p"/companies/#{company}/edit"}>Edit</.link>
       </:action>

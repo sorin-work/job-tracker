@@ -78,4 +78,9 @@ defmodule JobTracker.CompaniesTest do
       assert {:error, :has_applications} = Companies.delete_company(company)
     end
   end
+
+  test "company_options/1 returns name and id pairs", %{user: user} do
+    company = company_fixture(user, name: "Acme")
+    assert Companies.company_options(user) == [{"Acme", company.id}]
+  end
 end

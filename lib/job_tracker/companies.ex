@@ -43,6 +43,18 @@ defmodule JobTracker.Companies do
   defp filter_search(query, _search), do: query
 
   @doc """
+  Returns `{id, name}` pairs for select inputs.
+  """
+  def company_options(%User{id: user_id}) do
+    Repo.all(
+      from c in Company,
+        where: c.user_id == ^user_id,
+        order_by: c.name,
+        select: {c.name, c.id}
+    )
+  end
+
+  @doc """
   Gets one of the user's companies. Raises `Ecto.NoResultsError` if it does not
   exist or belongs to someone else.
   """

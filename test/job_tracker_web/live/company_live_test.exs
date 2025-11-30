@@ -3,6 +3,7 @@ defmodule JobTrackerWeb.CompanyLiveTest do
 
   import Phoenix.LiveViewTest
   import JobTracker.CompaniesFixtures
+  import JobTracker.PipelineFixtures
 
   setup :register_and_log_in_user
 
@@ -45,11 +46,22 @@ defmodule JobTrackerWeb.CompanyLiveTest do
     assert html =~ "Printers"
   end
 
-  test "shows a company", %{conn: conn, user: user} do
-    company = company_fixture(user, name: "Initech", notes: "Great snacks")
+  test "won't delete a company with applications", %{conn: conn, user: user} do
+    company = company_fixture(user, name: "Initech")
+    application_fixture(user, company_id: company.id)
 
-    {:ok, _lv, html} = live(conn, ~p"/companies/#{company}")
+    {:ok, lv, _html} = live(conn, ~p"/companies")
+    html = lv |> element("#companies-#{company.id} a", "Delete") |> render_click()
+    assert html =~ "still has applications"
+  end
+
+  test "shows a company with its applications and contacts", %{conn: conn, user: user} do
+    company = company_fixture(user, name: "Initech", notes: "Great snacks")
+    application_fixture(user, company_id: company.id, title: "Printer Engineer")
+
+    {:ok, lv, html} = live(conn, ~p"/companies/#{company}")
     assert html =~ "Great snacks"
+    assert lv |> element("#company-applications") |> render() =~ "Printer Engineer"
 
     {:ok, lv, _html} = live(conn, ~p"/companies/#{company}/show/edit")
     html = lv |> form("#company-form", company: %{location: "Austin"}) |> render_submit()

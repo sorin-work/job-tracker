@@ -90,6 +90,7 @@ defmodule JobTrackerWeb do
       # Core UI components
       import JobTrackerWeb.CoreComponents
       import JobTrackerWeb.AppComponents
+      alias JobTrackerWeb.Format
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

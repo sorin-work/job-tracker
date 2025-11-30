@@ -2,6 +2,7 @@ defmodule JobTrackerWeb.CompanyLive.Show do
   use JobTrackerWeb, :live_view
 
   alias JobTracker.Companies
+  alias JobTracker.Pipeline
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,6 +23,7 @@ defmodule JobTrackerWeb.CompanyLive.Show do
 
     socket
     |> assign(:company, company)
+    |> assign(:applications, Pipeline.list_applications(user, company_id: company.id))
   end
 
   @impl true
@@ -62,6 +64,26 @@ defmodule JobTrackerWeb.CompanyLive.Show do
     <p :if={@company.notes} class="mt-4 whitespace-pre-line text-sm text-zinc-700">
       {@company.notes}
     </p>
+
+    <div class="mt-8 grid gap-6 lg:grid-cols-3">
+      <.panel id="company-applications" title="Applications" class="lg:col-span-2">
+        <:actions>
+          <.link navigate={~p"/applications/new"} class="font-medium text-brand">Add</.link>
+        </:actions>
+        <.empty_state :if={@applications == []}>No applications at {@company.name} yet.</.empty_state>
+        <ul class="divide-y divide-zinc-100">
+          <li :for={application <- @applications} class="flex items-center justify-between gap-3 py-2">
+            <.link
+              navigate={~p"/applications/#{application}"}
+              class="text-sm font-medium text-zinc-900 hover:underline"
+            >
+              {application.title}
+            </.link>
+            <.status_badge status={application.status} />
+          </li>
+        </ul>
+      </.panel>
+    </div>
 
     <.modal
       :if={@live_action == :edit}
