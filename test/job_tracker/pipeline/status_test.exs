@@ -16,6 +16,12 @@ defmodule JobTracker.Pipeline.StatusTest do
            ]
   end
 
+  test "open and closed split the statuses" do
+    assert Status.open() ++ Status.closed() == Status.all()
+    assert Status.closed?(:rejected)
+    refute Status.closed?(:offer)
+  end
+
   test "rank/1 follows the progression and is nil for rejected and withdrawn" do
     assert Status.rank(:wishlist) == 0
     assert Status.rank(:offer) == 4
