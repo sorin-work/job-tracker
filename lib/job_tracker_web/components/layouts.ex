@@ -11,4 +11,11 @@ defmodule JobTrackerWeb.Layouts do
   use JobTrackerWeb, :html
 
   embed_templates "layouts/*"
+
+  def nav_items do
+    [
+      {"Applications", ~p"/applications", :applications},
+      {"Companies", ~p"/companies", :companies}
+    ]
+  end
 end
