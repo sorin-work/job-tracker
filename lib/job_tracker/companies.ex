@@ -36,11 +36,18 @@ defmodule JobTracker.Companies do
   end
 
   defp filter_search(query, search) when is_binary(search) and search != "" do
-    pattern = "%" <> search <> "%"
+    pattern = "%" <> escape_like(search) <> "%"
     where(query, [c], ilike(c.name, ^pattern))
   end
 
   defp filter_search(query, _search), do: query
+
+  @doc """
+  Escapes the characters that have a special meaning in LIKE patterns.
+  """
+  def escape_like(text) do
+    String.replace(text, ~r/([\\%_])/, "\\\\\\1")
+  end
 
   @doc """
   Returns `{id, name}` pairs for select inputs.

@@ -35,6 +35,13 @@ defmodule JobTracker.CompaniesTest do
 
       assert [%{name: "Northwind"}] = Companies.list_companies(user, search: "north")
     end
+
+    test "treats LIKE wildcards in the search literally", %{user: user} do
+      company_fixture(user, name: "100% Remote")
+      company_fixture(user, name: "Ten Remote")
+
+      assert [%{name: "100% Remote"}] = Companies.list_companies(user, search: "%")
+    end
   end
 
   describe "create_company/2" do
