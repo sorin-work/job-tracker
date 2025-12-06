@@ -38,7 +38,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   def handle_event("change_status", %{"status" => %{"status" => status} = params}, socket) do
     %{current_user: user, application: application} = socket.assigns
 
-    case Pipeline.change_status(user, application, status, params["note"]) do
+    case Pipeline.change_status(user, application, status, blank_to_nil(params["note"])) do
       {:ok, _application} ->
         {:noreply,
          socket
@@ -69,6 +69,15 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
       Pipeline.get_application!(socket.assigns.current_user, socket.assigns.application.id)
 
     assign_application(socket, application)
+  end
+
+  defp blank_to_nil(nil), do: nil
+
+  defp blank_to_nil(value) do
+    case String.trim(value) do
+      "" -> nil
+      value -> value
+    end
   end
 
   @impl true
