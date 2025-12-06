@@ -96,6 +96,16 @@ defmodule JobTracker.PipelineTest do
     end
   end
 
+  test "timeline/1 lists status changes newest first", %{user: user} do
+    application = application_fixture(user)
+    {:ok, application} = Pipeline.change_status(user, application, :applied)
+
+    application = Pipeline.get_application!(user, application.id)
+
+    assert [%{type: :status, to: :applied}, %{type: :status, to: :wishlist}] =
+             Pipeline.timeline(application)
+  end
+
   test "delete_application/1 removes it with its history", %{user: user} do
     application = application_fixture(user)
     assert {:ok, _} = Pipeline.delete_application(application)

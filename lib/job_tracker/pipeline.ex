@@ -225,4 +225,25 @@ defmodule JobTracker.Pipeline do
   defp merge_errors(changeset, %Ecto.Changeset{errors: errors}) do
     %{changeset | errors: Enum.uniq(changeset.errors ++ errors), valid?: false, action: :validate}
   end
+
+  ## Timeline
+
+  @doc """
+  The events shown on an application's timeline, newest first. Expects the
+  application to come from `get_application!/2`.
+  """
+  def timeline(%JobApplication{status_changes: changes}) do
+    status_events =
+      Enum.map(changes, fn change ->
+        %{
+          type: :status,
+          at: change.changed_at,
+          from: change.from_status,
+          to: change.to_status,
+          note: change.note
+        }
+      end)
+
+    Enum.sort_by(status_events, & &1.at, {:desc, DateTime})
+  end
 end

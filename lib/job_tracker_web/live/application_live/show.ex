@@ -2,6 +2,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   use JobTrackerWeb, :live_view
 
   alias JobTracker.Pipeline
+  alias JobTracker.Pipeline.Status
 
   @impl true
   def mount(_params, _session, socket) do
@@ -21,6 +22,8 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   defp assign_application(socket, application) do
     socket
     |> assign(:application, application)
+    |> assign(:timeline, Pipeline.timeline(application))
+    |> assign(:status_form, to_form(%{"status" => application.status, "note" => ""}, as: :status))
   end
 
   defp apply_action(socket, :show, _params) do
@@ -32,6 +35,21 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   end
 
   @impl true
+  def handle_event("change_status", %{"status" => %{"status" => status} = params}, socket) do
+    %{current_user: user, application: application} = socket.assigns
+
+    case Pipeline.change_status(user, application, status, params["note"]) do
+      {:ok, _application} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Moved to #{Status.label(status)}")
+         |> reload()}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Could not change the status")}
+    end
+  end
+
   def handle_event("delete", _params, socket) do
     {:ok, _} = Pipeline.delete_application(socket.assigns.application)
 
@@ -121,9 +139,45 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
             <p class="mt-1 whitespace-pre-line text-sm text-zinc-800">{@application.notes}</p>
           </div>
         </.panel>
+
+        <.panel id="timeline" title="Timeline">
+          <ol class="relative space-y-4 border-l border-zinc-200 pl-5">
+            <li :for={event <- @timeline} class="text-sm">
+              <span class="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-zinc-300" />
+              <p class="text-xs text-zinc-500">{Format.datetime(event.at, @current_user)}</p>
+              <%= case event.type do %>
+                <% :status -> %>
+                  <p :if={is_nil(event.from)} class="text-zinc-800">
+                    Added as <.status_badge status={event.to} />
+                  </p>
+                  <p :if={event.from} class="text-zinc-800">
+                    <.status_badge status={event.from} /> → <.status_badge status={event.to} />
+                  </p>
+              <% end %>
+            </li>
+          </ol>
+        </.panel>
       </div>
 
       <div class="space-y-6">
+        <.panel title="Status">
+          <.form for={@status_form} id="status-form" phx-submit="change_status" class="space-y-3">
+            <.input
+              field={@status_form[:status]}
+              type="select"
+              label="Move to"
+              options={Status.options()}
+            />
+            <.input
+              field={@status_form[:note]}
+              type="text"
+              label="Note (optional)"
+              placeholder="What happened?"
+            />
+            <.button class="w-full" phx-disable-with="Saving...">Update status</.button>
+          </.form>
+        </.panel>
+
         <button
           type="button"
           phx-click="delete"

@@ -50,9 +50,22 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       %{application: application_fixture(user, title: "Platform Engineer", status: :applied)}
     end
 
-    test "displays the application", %{conn: conn, application: application} do
-      {:ok, _lv, html} = live(conn, ~p"/applications/#{application}")
+    test "displays the application with its timeline", %{conn: conn, application: application} do
+      {:ok, lv, html} = live(conn, ~p"/applications/#{application}")
+
       assert html =~ "Platform Engineer"
+      assert lv |> element("#timeline") |> render() =~ "Added as"
+    end
+
+    test "changes the status with a note", %{conn: conn, application: application} do
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}")
+
+      html =
+        lv
+        |> form("#status-form", status: %{status: "screening", note: "Recruiter called"})
+        |> render_submit()
+
+      assert html =~ "Moved to Screening"
     end
 
     test "edits the application", %{conn: conn, application: application} do

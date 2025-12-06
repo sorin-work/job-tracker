@@ -11,6 +11,19 @@ defmodule JobTrackerWeb.Format do
   def short_date(nil), do: "—"
   def short_date(%Date{} = date), do: Calendar.strftime(date, "%b %-d")
 
+  @doc """
+  A UTC datetime shown in the user's time zone, e.g. "Tue, Mar 3 · 2:30 PM".
+  """
+  def datetime(nil, _user), do: "—"
+
+  def datetime(%DateTime{} = datetime, user) do
+    datetime |> TimeZones.to_local(user) |> Calendar.strftime("%a, %b %-d · %-I:%M %p")
+  end
+
+  def time(%DateTime{} = datetime, user) do
+    datetime |> TimeZones.to_local(user) |> Calendar.strftime("%-I:%M %p")
+  end
+
   def local_date(%DateTime{} = datetime, user) do
     datetime |> TimeZones.to_local(user) |> DateTime.to_date() |> date()
   end
