@@ -6,10 +6,19 @@ defmodule JobTracker.PipelineTest do
   import JobTracker.PipelineFixtures
 
   alias JobTracker.Pipeline
-  alias JobTracker.Pipeline.JobApplication
+  alias JobTracker.Pipeline.{JobApplication, StatusChange}
 
   setup do
     %{user: user_fixture()}
+  end
+
+  defp history(application) do
+    Repo.all(
+      from s in StatusChange,
+        where: s.job_application_id == ^application.id,
+        order_by: s.id,
+        select: {s.from_status, s.to_status}
+    )
   end
 
   describe "create_application/2" do
@@ -24,6 +33,7 @@ defmodule JobTracker.PipelineTest do
 
       assert application.status == :wishlist
       assert application.applied_on == nil
+      assert history(application) == [{nil, :wishlist}]
     end
 
     test "creates the company from a typed name", %{user: user} do
@@ -43,6 +53,21 @@ defmodule JobTracker.PipelineTest do
   end
 
   describe "update_application/3" do
+    test "records a status change", %{user: user} do
+      application = application_fixture(user)
+
+      assert {:ok, updated} = Pipeline.update_application(user, application, %{status: "applied"})
+      assert updated.status == :applied
+      assert updated.applied_on == Date.utc_today()
+      assert history(application) == [{nil, :wishlist}, {:wishlist, :applied}]
+    end
+
+    test "does not record anything when the status stays the same", %{user: user} do
+      application = application_fixture(user)
+      assert {:ok, _} = Pipeline.update_application(user, application, %{title: "Renamed"})
+      assert history(application) == [{nil, :wishlist}]
+    end
+
     test "returns errors", %{user: user} do
       application = application_fixture(user)
 
@@ -51,9 +76,29 @@ defmodule JobTracker.PipelineTest do
     end
   end
 
-  test "delete_application/1 removes it", %{user: user} do
+  describe "change_status/4" do
+    test "moves the application and keeps the note in the history", %{user: user} do
+      application = application_fixture(user, status: :applied)
+
+      assert {:ok, application} =
+               Pipeline.change_status(user, application, :screening, "Recruiter called")
+
+      assert application.status == :screening
+
+      assert %StatusChange{note: "Recruiter called", from_status: :applied} =
+               Repo.one(from s in StatusChange, where: s.to_status == :screening)
+    end
+
+    test "is a no-op for the current status", %{user: user} do
+      application = application_fixture(user)
+      assert {:ok, _} = Pipeline.change_status(user, application, "wishlist")
+      assert history(application) == [{nil, :wishlist}]
+    end
+  end
+
+  test "delete_application/1 removes it with its history", %{user: user} do
     application = application_fixture(user)
     assert {:ok, _} = Pipeline.delete_application(application)
-    assert_raise Ecto.NoResultsError, fn -> Pipeline.get_application!(user, application.id) end
+    assert Repo.aggregate(StatusChange, :count) == 0
   end
 end

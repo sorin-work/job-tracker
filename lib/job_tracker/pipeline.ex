@@ -1,6 +1,7 @@
 defmodule JobTracker.Pipeline do
   @moduledoc """
-  Job applications and where they are in the pipeline.
+  Job applications and the status history that is recorded as they move
+  through the pipeline.
 
   Every function takes the current user and only ever touches that user's data.
   """
@@ -10,7 +11,7 @@ defmodule JobTracker.Pipeline do
   alias Ecto.Multi
   alias JobTracker.Accounts.User
   alias JobTracker.Companies
-  alias JobTracker.Pipeline.{JobApplication, Status}
+  alias JobTracker.Pipeline.{JobApplication, Status, StatusChange}
   alias JobTracker.Repo
 
   ## Listing
@@ -46,7 +47,10 @@ defmodule JobTracker.Pipeline do
   def get_application!(%User{} = user, id) do
     JobApplication
     |> Repo.get_by!(id: id, user_id: user.id)
-    |> Repo.preload(:company)
+    |> Repo.preload([
+      :company,
+      :status_changes
+    ])
   end
 
   def change_application(%JobApplication{} = application, attrs \\ %{}) do
@@ -54,20 +58,21 @@ defmodule JobTracker.Pipeline do
   end
 
   @doc """
-  Creates an application.
+  Creates an application and records its first status in the history.
 
   The company can be given as `company_id` or as a `company_name`, which is
   looked up (case-insensitively) or created.
   """
   def create_application(%User{} = user, attrs) do
+    now = DateTime.utc_now(:second)
     changeset = JobApplication.changeset(%JobApplication{user_id: user.id}, attrs)
 
     if changeset.valid?,
-      do: insert_application(user, changeset),
+      do: insert_application(user, changeset, now),
       else: {:error, %{changeset | action: :insert}}
   end
 
-  defp insert_application(user, changeset) do
+  defp insert_application(user, changeset, now) do
     Multi.new()
     |> Multi.run(:company, fn _repo, _ -> resolve_company(user, changeset) end)
     |> Multi.insert(:application, fn %{company: company} ->
@@ -76,6 +81,13 @@ defmodule JobTracker.Pipeline do
       changeset
       |> Ecto.Changeset.put_change(:company_id, company.id)
       |> maybe_set_applied_on(user, status)
+    end)
+    |> Multi.insert(:status_change, fn %{application: application} ->
+      %StatusChange{
+        job_application_id: application.id,
+        to_status: application.status,
+        changed_at: now
+      }
     end)
     |> Repo.transaction()
     |> case do
@@ -86,7 +98,7 @@ defmodule JobTracker.Pipeline do
   end
 
   @doc """
-  Updates an application.
+  Updates an application. A status change is recorded in the history.
   """
   def update_application(%User{} = user, %JobApplication{} = application, attrs) do
     changeset = JobApplication.changeset(application, attrs)
@@ -96,7 +108,7 @@ defmodule JobTracker.Pipeline do
       else: {:error, %{changeset | action: :update}}
   end
 
-  defp save_application(user, _application, changeset) do
+  defp save_application(user, application, changeset) do
     Multi.new()
     |> Multi.run(:company, fn _repo, _ -> resolve_company(user, changeset) end)
     |> Multi.update(:application, fn %{company: company} ->
@@ -106,6 +118,7 @@ defmodule JobTracker.Pipeline do
       |> Ecto.Changeset.put_change(:company_id, company.id)
       |> maybe_set_applied_on(user, status)
     end)
+    |> record_status_change(user, application)
     |> Repo.transaction()
     |> case do
       {:ok, %{application: application}} ->
@@ -119,8 +132,51 @@ defmodule JobTracker.Pipeline do
     end
   end
 
+  @doc """
+  Moves an application to a new status, optionally with a note for the
+  timeline. Moving to the current status is a no-op.
+  """
+  def change_status(%User{} = user, %JobApplication{} = application, status, note \\ nil) do
+    status = Status.cast!(status)
+
+    if status == application.status do
+      {:ok, application}
+    else
+      changeset =
+        application
+        |> Ecto.Changeset.change(status: status)
+        |> maybe_set_applied_on(user, status)
+
+      Multi.new()
+      |> Multi.update(:application, changeset)
+      |> record_status_change(user, application, note)
+      |> Repo.transaction()
+      |> case do
+        {:ok, %{application: application}} -> {:ok, application}
+        {:error, _step, error, _} -> {:error, error}
+      end
+    end
+  end
+
   def delete_application(%JobApplication{} = application) do
     Repo.delete(application)
+  end
+
+  defp record_status_change(multi, _user, previous, note \\ nil) do
+    multi
+    |> Multi.run(:status_change, fn repo, %{application: application} ->
+      if application.status == previous.status do
+        {:ok, nil}
+      else
+        repo.insert(%StatusChange{
+          job_application_id: application.id,
+          from_status: previous.status,
+          to_status: application.status,
+          note: note,
+          changed_at: DateTime.utc_now(:second)
+        })
+      end
+    end)
   end
 
   # The application date is filled in the first time it moves past the wishlist.

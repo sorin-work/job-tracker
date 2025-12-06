@@ -24,6 +24,9 @@ defmodule JobTracker.Pipeline.JobApplication do
     belongs_to :user, JobTracker.Accounts.User
     belongs_to :company, JobTracker.Companies.Company
 
+    has_many :status_changes, JobTracker.Pipeline.StatusChange,
+      preload_order: [desc: :changed_at, desc: :id]
+
     timestamps(type: :utc_datetime)
   end
 
