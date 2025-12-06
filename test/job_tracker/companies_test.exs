@@ -67,6 +67,12 @@ defmodule JobTracker.CompaniesTest do
   end
 
   describe "find_or_create_company/2" do
+    test "finds an existing company case-insensitively", %{user: user} do
+      company = company_fixture(user, name: "Acme")
+      assert {:ok, found} = Companies.find_or_create_company(user, "  acme ")
+      assert found.id == company.id
+    end
+
     test "creates a missing company", %{user: user} do
       assert {:ok, %Company{name: "Initech"}} = Companies.find_or_create_company(user, "Initech")
     end

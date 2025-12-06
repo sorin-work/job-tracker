@@ -46,6 +46,15 @@ defmodule JobTracker.PipelineTest do
       assert application.company.name == "Brand New Co"
     end
 
+    test "reuses an existing company when the typed name matches", %{user: user} do
+      company = company_fixture(user, name: "Acme")
+
+      assert {:ok, application} =
+               Pipeline.create_application(user, %{title: "Engineer", company_name: "acme"})
+
+      assert application.company_id == company.id
+    end
+
     test "fills in the application date when created as applied", %{user: user} do
       application = application_fixture(user, status: :applied)
       assert application.applied_on == Date.utc_today()

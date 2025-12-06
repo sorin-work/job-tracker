@@ -70,12 +70,16 @@ defmodule JobTracker.Companies do
   end
 
   @doc """
-  Finds a company by name or creates it.
+  Finds a company by name (case-insensitively) or creates it.
   """
   def find_or_create_company(%User{} = user, name) when is_binary(name) do
     name = String.trim(name)
 
-    case Repo.get_by(Company, user_id: user.id, name: name) do
+    case Repo.one(
+           from c in Company,
+             where:
+               c.user_id == ^user.id and fragment("lower(?)", c.name) == ^String.downcase(name)
+         ) do
       nil -> create_company(user, %{name: name})
       company -> {:ok, company}
     end
