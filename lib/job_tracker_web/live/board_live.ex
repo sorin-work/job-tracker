@@ -39,6 +39,11 @@ defmodule JobTrackerWeb.BoardLive do
     <.header>
       Board
       <:subtitle>Drag cards between columns to change their status.</:subtitle>
+      <:actions>
+        <.link navigate={~p"/applications/new"}>
+          <.button>New application</.button>
+        </.link>
+      </:actions>
     </.header>
 
     <div id="board" phx-hook="Board" class="mt-6 flex gap-3 overflow-x-auto pb-4">
