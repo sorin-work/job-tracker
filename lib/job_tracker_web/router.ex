@@ -64,6 +64,8 @@ defmodule JobTrackerWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
+      live "/board", BoardLive, :index
+
       live "/applications", ApplicationLive.Index, :index
       live "/applications/new", ApplicationLive.Index, :new
       live "/applications/:id", ApplicationLive.Show, :show
