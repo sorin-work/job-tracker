@@ -136,6 +136,14 @@ defmodule JobTracker.PipelineTest do
       assert ids == [c.id, a.id, b.id]
       assert history(c) == [{nil, :wishlist}]
     end
+
+    test "rejects unknown statuses and other users' applications", %{user: user} do
+      card = application_fixture(user)
+      other = application_fixture(user_fixture())
+
+      assert {:error, :invalid_status} = Pipeline.move_application(user, card.id, "hired", 0)
+      assert {:error, :not_found} = Pipeline.move_application(user, other.id, "applied", 0)
+    end
   end
 
   describe "board/2" do

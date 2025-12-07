@@ -181,9 +181,8 @@ defmodule JobTracker.Pipeline do
   within that column. The other cards in the column are renumbered.
   """
   def move_application(%User{} = user, id, status, index) do
-    status = String.to_existing_atom(status)
-
-    with %JobApplication{} = application <- Repo.get_by(JobApplication, id: id, user_id: user.id) do
+    with {:ok, status} <- Status.cast(status),
+         %JobApplication{} = application <- Repo.get_by(JobApplication, id: id, user_id: user.id) do
       siblings =
         Repo.all(
           from a in JobApplication,
@@ -206,6 +205,7 @@ defmodule JobTracker.Pipeline do
         {:error, _step, error, _} -> {:error, error}
       end
     else
+      :error -> {:error, :invalid_status}
       nil -> {:error, :not_found}
     end
   end

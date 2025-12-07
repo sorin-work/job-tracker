@@ -17,4 +17,17 @@ defmodule JobTrackerWeb.BoardLiveTest do
 
     assert lv |> element("#column-screening") |> render() =~ "Data Engineer"
   end
+
+  test "an invalid move shows an error", %{conn: conn, user: user} do
+    application = application_fixture(user)
+
+    {:ok, lv, _html} = live(conn, ~p"/board")
+
+    assert render_hook(lv, "move", %{
+             "id" => to_string(application.id),
+             "status" => "hired",
+             "index" => 0
+           }) =~
+             "Could not move the application"
+  end
 end
