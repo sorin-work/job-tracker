@@ -39,6 +39,23 @@ defmodule JobTracker.Pipeline do
   defp filter_company(query, nil), do: query
   defp filter_company(query, company_id), do: where(query, [a], a.company_id == ^company_id)
 
+  @doc """
+  Applications grouped by status for the board, each column ordered by its
+  position.
+  """
+  def board(%User{} = user) do
+    applications =
+      Repo.all(
+        from a in JobApplication,
+          where: a.user_id == ^user.id,
+          order_by: [asc: a.position],
+          preload: [:company]
+      )
+
+    grouped = Enum.group_by(applications, & &1.status)
+    Map.new(Status.all(), &{&1, Map.get(grouped, &1, [])})
+  end
+
   ## Single applications
 
   @doc """
@@ -157,6 +174,50 @@ defmodule JobTracker.Pipeline do
         {:error, _step, error, _} -> {:error, error}
       end
     end
+  end
+
+  @doc """
+  Moves an application on the board: into the column for `status`, at `index`
+  within that column. The other cards in the column are renumbered.
+  """
+  def move_application(%User{} = user, id, status, index) do
+    status = String.to_existing_atom(status)
+
+    with %JobApplication{} = application <- Repo.get_by(JobApplication, id: id, user_id: user.id) do
+      siblings =
+        Repo.all(
+          from a in JobApplication,
+            where: a.user_id == ^user.id and a.status == ^status and a.id != ^application.id,
+            order_by: [asc: a.position, desc: a.updated_at],
+            select: a.id
+        )
+
+      ordered = List.insert_at(siblings, index, application.id)
+
+      changeset = JobApplication.move_changeset(application, status, index)
+
+      Multi.new()
+      |> Multi.update(:application, changeset)
+      |> Multi.run(:positions, fn repo, _ -> renumber(repo, ordered) end)
+      |> record_status_change(user, application)
+      |> Repo.transaction()
+      |> case do
+        {:ok, %{application: application}} -> {:ok, application}
+        {:error, _step, error, _} -> {:error, error}
+      end
+    else
+      nil -> {:error, :not_found}
+    end
+  end
+
+  defp renumber(repo, ids) do
+    ids
+    |> Enum.with_index()
+    |> Enum.each(fn {id, position} ->
+      repo.update_all(from(a in JobApplication, where: a.id == ^id), set: [position: position])
+    end)
+
+    {:ok, length(ids)}
   end
 
   def delete_application(%JobApplication{} = application) do

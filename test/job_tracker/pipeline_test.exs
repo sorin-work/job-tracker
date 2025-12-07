@@ -111,6 +111,40 @@ defmodule JobTracker.PipelineTest do
     end
   end
 
+  describe "move_application/4" do
+    test "moves a card into another column at the given index", %{user: user} do
+      a = application_fixture(user, status: :applied)
+      b = application_fixture(user, status: :applied)
+      card = application_fixture(user)
+
+      assert {:ok, moved} = Pipeline.move_application(user, card.id, "applied", 1)
+      assert moved.status == :applied
+
+      ids = user |> Pipeline.board() |> Map.fetch!(:applied) |> Enum.map(& &1.id)
+      assert ids == [a.id, card.id, b.id]
+      assert history(card) == [{nil, :wishlist}, {:wishlist, :applied}]
+    end
+
+    test "reorders within a column without recording a status change", %{user: user} do
+      a = application_fixture(user)
+      b = application_fixture(user)
+      c = application_fixture(user)
+
+      assert {:ok, _} = Pipeline.move_application(user, c.id, "wishlist", 0)
+
+      ids = user |> Pipeline.board() |> Map.fetch!(:wishlist) |> Enum.map(& &1.id)
+      assert ids == [c.id, a.id, b.id]
+      assert history(c) == [{nil, :wishlist}]
+    end
+  end
+
+  describe "board/2" do
+    test "has a column for every status", %{user: user} do
+      board = Pipeline.board(user)
+      assert Map.keys(board) |> Enum.sort() == Enum.sort(JobTracker.Pipeline.Status.all())
+    end
+  end
+
   test "timeline/1 lists status changes newest first", %{user: user} do
     application = application_fixture(user)
     {:ok, application} = Pipeline.change_status(user, application, :applied)

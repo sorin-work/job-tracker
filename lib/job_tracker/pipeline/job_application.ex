@@ -71,4 +71,11 @@ defmodule JobTracker.Pipeline.JobApplication do
       add_error(changeset, :company_id, "pick a company or type a new name")
     end
   end
+
+  @doc """
+  Changeset used when an application is dragged on the board.
+  """
+  def move_changeset(application, status, position) do
+    change(application, status: status, position: position)
+  end
 end
