@@ -18,6 +18,7 @@ defmodule JobTracker.Pipeline.JobApplication do
     field :salary_max, :integer
     field :salary_currency, :string, default: "USD"
     field :notes, :string
+    field :position, :integer, default: 0
 
     field :company_name, :string, virtual: true
 

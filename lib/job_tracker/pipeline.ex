@@ -80,6 +80,7 @@ defmodule JobTracker.Pipeline do
 
       changeset
       |> Ecto.Changeset.put_change(:company_id, company.id)
+      |> Ecto.Changeset.put_change(:position, next_position(user, status))
       |> maybe_set_applied_on(user, status)
     end)
     |> Multi.insert(:status_change, fn %{application: application} ->
@@ -144,7 +145,7 @@ defmodule JobTracker.Pipeline do
     else
       changeset =
         application
-        |> Ecto.Changeset.change(status: status)
+        |> Ecto.Changeset.change(status: status, position: next_position(user, status))
         |> maybe_set_applied_on(user, status)
 
       Multi.new()
@@ -177,6 +178,14 @@ defmodule JobTracker.Pipeline do
         })
       end
     end)
+  end
+
+  defp next_position(user, status) do
+    Repo.one(
+      from a in JobApplication,
+        where: a.user_id == ^user.id and a.status == ^status,
+        select: coalesce(max(a.position) + 1, 0)
+    )
   end
 
   # The application date is filled in the first time it moves past the wishlist.

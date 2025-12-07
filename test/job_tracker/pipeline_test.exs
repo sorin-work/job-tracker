@@ -59,6 +59,12 @@ defmodule JobTracker.PipelineTest do
       application = application_fixture(user, status: :applied)
       assert application.applied_on == Date.utc_today()
     end
+
+    test "puts new applications at the end of their column", %{user: user} do
+      first = application_fixture(user)
+      second = application_fixture(user)
+      assert second.position == first.position + 1
+    end
   end
 
   describe "update_application/3" do
