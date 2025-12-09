@@ -2,6 +2,7 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
   use JobTrackerWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import JobTracker.CompaniesFixtures
   import JobTracker.PipelineFixtures
 
   setup :register_and_log_in_user
@@ -42,6 +43,25 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       assert html =~ "Staff Engineer"
       assert html =~ "Brand New Co"
       assert html =~ "$150k – $170k"
+    end
+
+    test "shows validation errors from the context", %{conn: conn, user: user} do
+      company = company_fixture(user)
+      {:ok, lv, _html} = live(conn, ~p"/applications/new")
+
+      html =
+        lv
+        |> form("#application-form",
+          job_application: %{
+            title: "Engineer",
+            company_id: company.id,
+            salary_min: "10",
+            salary_max: "5"
+          }
+        )
+        |> render_submit()
+
+      assert html =~ "must be greater than or equal to the minimum"
     end
   end
 

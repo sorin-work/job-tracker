@@ -21,6 +21,14 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
     assert JobApplication.changeset(%JobApplication{}, %{title: "Engineer", company_name: "Acme"}).valid?
   end
 
+  test "salary max can't be below the min" do
+    assert %{salary_max: ["must be greater than or equal to the minimum"]} =
+             errors_on(changeset(%{salary_min: 120_000, salary_max: 100_000}))
+
+    assert changeset(%{salary_min: 100_000, salary_max: 100_000}).valid?
+    assert changeset(%{salary_max: 100_000}).valid?
+  end
+
   test "currency must be three letters" do
     assert %{salary_currency: ["must be a 3 letter code like USD"]} =
              errors_on(changeset(%{salary_currency: "EURO"}))

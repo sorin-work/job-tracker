@@ -59,6 +59,7 @@ defmodule JobTracker.Pipeline.JobApplication do
     )
     |> validate_number(:salary_min, greater_than_or_equal_to: 0)
     |> validate_number(:salary_max, greater_than_or_equal_to: 0)
+    |> validate_salary_range()
     |> assoc_constraint(:company)
   end
 
@@ -69,6 +70,17 @@ defmodule JobTracker.Pipeline.JobApplication do
       changeset
     else
       add_error(changeset, :company_id, "pick a company or type a new name")
+    end
+  end
+
+  defp validate_salary_range(changeset) do
+    min = get_field(changeset, :salary_min)
+    max = get_field(changeset, :salary_max)
+
+    if min && max && min > max do
+      add_error(changeset, :salary_max, "must be greater than or equal to the minimum")
+    else
+      changeset
     end
   end
 

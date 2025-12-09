@@ -86,8 +86,10 @@ defmodule JobTracker.PipelineTest do
     test "returns errors", %{user: user} do
       application = application_fixture(user)
 
-      assert {:error, changeset} = Pipeline.update_application(user, application, %{title: ""})
-      assert %{title: [_]} = errors_on(changeset)
+      assert {:error, changeset} =
+               Pipeline.update_application(user, application, %{salary_min: 10, salary_max: 5})
+
+      assert %{salary_max: [_]} = errors_on(changeset)
     end
   end
 
