@@ -56,7 +56,7 @@ defmodule JobTracker.Companies do
     Repo.all(
       from c in Company,
         where: c.user_id == ^user_id,
-        order_by: c.name,
+        order_by: fragment("lower(?)", c.name),
         select: {c.name, c.id}
     )
   end
