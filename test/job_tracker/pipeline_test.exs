@@ -139,6 +139,15 @@ defmodule JobTracker.PipelineTest do
       assert history(c) == [{nil, :wishlist}]
     end
 
+    test "clamps the index to the column size", %{user: user} do
+      a = application_fixture(user, status: :applied)
+      card = application_fixture(user)
+
+      assert {:ok, _} = Pipeline.move_application(user, to_string(card.id), "applied", 99)
+      ids = user |> Pipeline.board() |> Map.fetch!(:applied) |> Enum.map(& &1.id)
+      assert ids == [a.id, card.id]
+    end
+
     test "rejects unknown statuses and other users' applications", %{user: user} do
       card = application_fixture(user)
       other = application_fixture(user_fixture())
