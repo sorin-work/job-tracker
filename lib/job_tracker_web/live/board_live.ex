@@ -58,6 +58,7 @@ defmodule JobTrackerWeb.BoardLive do
       >
         <h2 class="flex items-center justify-between px-1 pb-2 text-sm font-semibold text-zinc-700">
           <.status_badge status={status} />
+          <span class="text-xs font-medium text-zinc-500">{length(@columns[status])}</span>
         </h2>
         <ol data-dropzone class="min-h-24 flex-1 space-y-2">
           <li
