@@ -66,7 +66,7 @@ defmodule JobTrackerWeb.BoardLive do
             id={"card-#{application.id}"}
             data-id={application.id}
             draggable="true"
-            class="rounded-md border border-zinc-200 bg-white p-3"
+            class="cursor-grab rounded-md border border-zinc-200 bg-white p-3 shadow-sm active:cursor-grabbing"
           >
             <.link navigate={~p"/applications/#{application}"} class="block">
               <p class="text-sm font-medium text-zinc-900">{application.title}</p>
