@@ -72,6 +72,22 @@ defmodule JobTrackerWeb.BoardLive do
               <p class="text-sm font-medium text-zinc-900">{application.title}</p>
               <p class="text-xs text-zinc-600">{application.company.name}</p>
             </.link>
+            <p
+              :if={
+                Format.salary(
+                  application.salary_min,
+                  application.salary_max,
+                  application.salary_currency
+                )
+              }
+              class="mt-1 text-xs text-zinc-500"
+            >
+              {Format.salary(
+                application.salary_min,
+                application.salary_max,
+                application.salary_currency
+              )}
+            </p>
             <div class="mt-2 flex items-center justify-end">
               <span class="text-[11px] text-zinc-400" title="Days since last change">
                 {days_since(application.updated_at, @today)}d
