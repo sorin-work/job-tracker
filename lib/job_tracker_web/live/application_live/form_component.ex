@@ -3,7 +3,7 @@ defmodule JobTrackerWeb.ApplicationLive.FormComponent do
 
   alias JobTracker.Companies
   alias JobTracker.Pipeline
-  alias JobTracker.Pipeline.Status
+  alias JobTracker.Pipeline.{JobApplication, Status}
 
   @impl true
   def render(assigns) do
@@ -44,10 +44,30 @@ defmodule JobTrackerWeb.ApplicationLive.FormComponent do
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
           <.input field={@form[:status]} type="select" label="Status" options={Status.options()} />
+          <.input
+            field={@form[:priority]}
+            type="select"
+            label="Priority"
+            options={[{"Low", 1}, {"Medium", 2}, {"High", 3}]}
+          />
           <.input field={@form[:applied_on]} type="date" label="Applied on" />
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
           <.input field={@form[:location]} type="text" label="Location" />
+          <.input
+            field={@form[:work_mode]}
+            type="select"
+            label="Work mode"
+            prompt="Not specified"
+            options={label_options(JobApplication.work_modes())}
+          />
+          <.input
+            field={@form[:source]}
+            type="select"
+            label="Source"
+            prompt="Not specified"
+            options={label_options(JobApplication.sources())}
+          />
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
           <.input field={@form[:salary_min]} type="number" label="Salary from" min="0" step="1000" />
@@ -60,6 +80,13 @@ defmodule JobTrackerWeb.ApplicationLive.FormComponent do
           label="Job posting URL"
           placeholder="https://"
         />
+        <.input
+          field={@form[:description]}
+          type="textarea"
+          label="Job description"
+          placeholder="Paste the posting here, it may be gone by the time you interview"
+          rows="6"
+        />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <:actions>
           <.button phx-disable-with="Saving...">Save application</.button>
@@ -68,6 +95,8 @@ defmodule JobTrackerWeb.ApplicationLive.FormComponent do
     </div>
     """
   end
+
+  defp label_options(values), do: Enum.map(values, &{Format.label(&1), &1})
 
   @impl true
   def update(%{application: application} = assigns, socket) do

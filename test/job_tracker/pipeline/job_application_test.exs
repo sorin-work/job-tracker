@@ -40,4 +40,8 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
 
     assert changeset(%{posting_url: "https://jobs.example.com/123"}).valid?
   end
+
+  test "priority must be between 1 and 3" do
+    assert %{priority: [_]} = errors_on(changeset(%{priority: 5}))
+  end
 end

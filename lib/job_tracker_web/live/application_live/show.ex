@@ -95,6 +95,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
           {@application.company.name}
         </.link>
         <span :if={@application.location}>· {@application.location}</span>
+        <span :if={@application.work_mode}>· {Format.label(@application.work_mode)}</span>
       </:subtitle>
       <:actions>
         <.link patch={~p"/applications/#{@application}/edit"}>
@@ -127,6 +128,10 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
               </dd>
             </div>
             <div>
+              <dt class="text-zinc-500">Source</dt>
+              <dd class="mt-0.5 text-zinc-900">{Format.label(@application.source)}</dd>
+            </div>
+            <div>
               <dt class="text-zinc-500">Job posting</dt>
               <dd class="mt-0.5 truncate">
                 <a
@@ -147,6 +152,18 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
             <p class="text-sm text-zinc-500">Notes</p>
             <p class="mt-1 whitespace-pre-line text-sm text-zinc-800">{@application.notes}</p>
           </div>
+          <details
+            :if={@application.description}
+            id="description"
+            class="mt-4 border-t border-zinc-100 pt-4"
+          >
+            <summary class="cursor-pointer text-sm font-medium text-zinc-700">
+              Job description snapshot
+            </summary>
+            <p class="mt-2 whitespace-pre-line text-sm leading-6 text-zinc-700">
+              {@application.description}
+            </p>
+          </details>
         </.panel>
 
         <.panel id="timeline" title="Timeline">

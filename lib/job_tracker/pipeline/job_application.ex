@@ -8,11 +8,18 @@ defmodule JobTracker.Pipeline.JobApplication do
 
   alias JobTracker.Pipeline.Status
 
+  @work_modes [:onsite, :hybrid, :remote]
+  @sources [:linkedin, :company_site, :referral, :recruiter, :job_board, :other]
+
   schema "job_applications" do
     field :title, :string
     field :status, Ecto.Enum, values: Status.all(), default: :wishlist
     field :location, :string
+    field :work_mode, Ecto.Enum, values: @work_modes
+    field :source, Ecto.Enum, values: @sources
+    field :priority, :integer, default: 2
     field :posting_url, :string
+    field :description, :string
     field :applied_on, :date
     field :salary_min, :integer
     field :salary_max, :integer
@@ -31,6 +38,9 @@ defmodule JobTracker.Pipeline.JobApplication do
     timestamps(type: :utc_datetime)
   end
 
+  def work_modes, do: @work_modes
+  def sources, do: @sources
+
   @doc false
   def changeset(application, attrs) do
     application
@@ -40,7 +50,11 @@ defmodule JobTracker.Pipeline.JobApplication do
       :company_name,
       :status,
       :location,
+      :work_mode,
+      :source,
+      :priority,
       :posting_url,
+      :description,
       :applied_on,
       :salary_min,
       :salary_max,
@@ -51,6 +65,8 @@ defmodule JobTracker.Pipeline.JobApplication do
     |> validate_company()
     |> validate_length(:title, max: 160)
     |> validate_length(:location, max: 120)
+    |> validate_length(:description, max: 50_000)
+    |> validate_inclusion(:priority, 1..3)
     |> validate_format(:posting_url, ~r/^https?:\/\/[^\s\/]+\.[^\s]+$/,
       message: "must be a valid URL"
     )

@@ -33,7 +33,8 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
             company_name: "Brand New Co",
             status: "applied",
             salary_min: "150000",
-            salary_max: "170000"
+            salary_max: "170000",
+            description: "We are hiring a staff engineer."
           }
         )
         |> render_submit()
