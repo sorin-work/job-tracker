@@ -142,7 +142,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
                   rel="noopener noreferrer"
                   class="text-brand hover:underline"
                 >
-                  {@application.posting_url}
+                  {URI.parse(@application.posting_url).host}
                   <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
                 </a>
                 <span :if={!@application.posting_url} class="text-zinc-900">—</span>
