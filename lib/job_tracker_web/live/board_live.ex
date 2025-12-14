@@ -88,7 +88,8 @@ defmodule JobTrackerWeb.BoardLive do
                 application.salary_currency
               )}
             </p>
-            <div class="mt-2 flex items-center justify-end">
+            <div class="mt-2 flex items-center justify-between">
+              <.priority priority={application.priority} />
               <span class="text-[11px] text-zinc-400" title="Days since last change">
                 {days_since(application.updated_at, @today)}d
               </span>

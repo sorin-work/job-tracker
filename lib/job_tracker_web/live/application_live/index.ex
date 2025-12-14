@@ -73,6 +73,7 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
             <th class="px-4 py-2">Status</th>
             <th class="px-4 py-2">Applied</th>
             <th class="px-4 py-2">Salary</th>
+            <th class="px-4 py-2">Priority</th>
             <th class="px-4 py-2">Updated</th>
           </tr>
         </thead>
@@ -100,6 +101,7 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
                 application.salary_currency
               ) || "—"}
             </td>
+            <td class="px-4 py-3"><.priority priority={application.priority} /></td>
             <td class="px-4 py-3 text-zinc-500">
               {Format.local_date(application.updated_at, @current_user)}
             </td>

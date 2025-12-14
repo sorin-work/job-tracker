@@ -35,6 +35,28 @@ defmodule JobTrackerWeb.AppComponents do
     """
   end
 
+  attr :priority, :integer, required: true
+
+  def priority(assigns) do
+    ~H"""
+    <span
+      class="inline-flex gap-0.5"
+      title={"Priority: #{priority_label(@priority)}"}
+      aria-label={"Priority: #{priority_label(@priority)}"}
+    >
+      <span
+        :for={i <- 1..3}
+        class={["h-1.5 w-1.5 rounded-full", if(i <= @priority, do: "bg-brand", else: "bg-zinc-200")]}
+      />
+    </span>
+    """
+  end
+
+  def priority_label(1), do: "low"
+  def priority_label(2), do: "medium"
+  def priority_label(3), do: "high"
+  def priority_label(_), do: "medium"
+
   attr :title, :string, required: true
   attr :class, :string, default: nil
   attr :rest, :global
