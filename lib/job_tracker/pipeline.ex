@@ -194,7 +194,10 @@ defmodule JobTracker.Pipeline do
       index = index |> max(0) |> min(length(siblings))
       ordered = List.insert_at(siblings, index, application.id)
 
-      changeset = JobApplication.move_changeset(application, status, index)
+      changeset =
+        application
+        |> JobApplication.move_changeset(status, index)
+        |> maybe_set_applied_on(user, status)
 
       Multi.new()
       |> Multi.update(:application, changeset)

@@ -121,6 +121,7 @@ defmodule JobTracker.PipelineTest do
 
       assert {:ok, moved} = Pipeline.move_application(user, card.id, "applied", 1)
       assert moved.status == :applied
+      assert moved.applied_on == Date.utc_today()
 
       ids = user |> Pipeline.board() |> Map.fetch!(:applied) |> Enum.map(& &1.id)
       assert ids == [a.id, card.id, b.id]
