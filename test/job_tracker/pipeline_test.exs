@@ -60,6 +60,12 @@ defmodule JobTracker.PipelineTest do
       assert application.applied_on == Date.utc_today()
     end
 
+    test "keeps a given application date", %{user: user} do
+      date = Date.add(Date.utc_today(), -10)
+      application = application_fixture(user, status: :applied, applied_on: date)
+      assert application.applied_on == date
+    end
+
     test "puts new applications at the end of their column", %{user: user} do
       first = application_fixture(user)
       second = application_fixture(user)
