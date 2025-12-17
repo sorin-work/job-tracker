@@ -76,6 +76,7 @@ defmodule JobTracker.Pipeline.JobApplication do
     |> validate_number(:salary_min, greater_than_or_equal_to: 0)
     |> validate_number(:salary_max, greater_than_or_equal_to: 0)
     |> validate_salary_range()
+    |> validate_applied_on()
     |> assoc_constraint(:company)
   end
 
@@ -98,6 +99,17 @@ defmodule JobTracker.Pipeline.JobApplication do
     else
       changeset
     end
+  end
+
+  defp validate_applied_on(changeset) do
+    validate_change(changeset, :applied_on, fn :applied_on, date ->
+      # Allow a day of slack for time zones ahead of the server.
+      if Date.compare(date, Date.add(Date.utc_today(), 1)) == :gt do
+        [applied_on: "can't be in the future"]
+      else
+        []
+      end
+    end)
   end
 
   @doc """

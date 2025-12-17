@@ -41,6 +41,12 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
     assert changeset(%{posting_url: "https://jobs.example.com/123"}).valid?
   end
 
+  test "applied on can't be in the future" do
+    future = Date.add(Date.utc_today(), 5)
+    assert %{applied_on: ["can't be in the future"]} = errors_on(changeset(%{applied_on: future}))
+    assert changeset(%{applied_on: Date.utc_today()}).valid?
+  end
+
   test "priority must be between 1 and 3" do
     assert %{priority: [_]} = errors_on(changeset(%{priority: 5}))
   end
