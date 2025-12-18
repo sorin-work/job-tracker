@@ -29,7 +29,10 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
     assert changeset(%{salary_max: 100_000}).valid?
   end
 
-  test "currency must be three letters" do
+  test "currency is upcased and must be three letters" do
+    changeset = changeset(%{salary_currency: " eur "})
+    assert Ecto.Changeset.get_change(changeset, :salary_currency) == "EUR"
+
     assert %{salary_currency: ["must be a 3 letter code like USD"]} =
              errors_on(changeset(%{salary_currency: "EURO"}))
   end

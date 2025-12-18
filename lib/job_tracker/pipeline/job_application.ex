@@ -61,6 +61,7 @@ defmodule JobTracker.Pipeline.JobApplication do
       :salary_currency,
       :notes
     ])
+    |> update_change(:salary_currency, &(&1 |> String.trim() |> String.upcase()))
     |> validate_required([:title, :status, :salary_currency])
     |> validate_company()
     |> validate_length(:title, max: 160)
