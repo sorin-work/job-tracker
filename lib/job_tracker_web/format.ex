@@ -50,8 +50,8 @@ defmodule JobTrackerWeb.Format do
   def money(amount, currency) do
     number =
       cond do
-        amount >= 1_000_000 -> "#{div(amount, 1_000_000)}M"
-        amount >= 1_000 -> "#{div(amount, 1_000)}k"
+        amount >= 1_000_000 -> trim_decimal(amount / 1_000_000) <> "M"
+        amount >= 1_000 -> trim_decimal(amount / 1_000) <> "k"
         true -> Integer.to_string(amount)
       end
 
@@ -59,6 +59,14 @@ defmodule JobTrackerWeb.Format do
       {:ok, symbol} -> symbol <> number
       :error -> number <> " " <> currency
     end
+  end
+
+  defp trim_decimal(value) do
+    rounded = Float.round(value, 1)
+
+    if rounded == Float.round(rounded),
+      do: rounded |> trunc() |> Integer.to_string(),
+      else: Float.to_string(rounded)
   end
 
   def label(nil), do: "—"
