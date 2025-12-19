@@ -50,6 +50,10 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
     assert changeset(%{applied_on: Date.utc_today()}).valid?
   end
 
+  test "rejects unknown statuses" do
+    assert %{status: ["is invalid"]} = errors_on(changeset(%{status: "hired"}))
+  end
+
   test "priority must be between 1 and 3" do
     assert %{priority: [_]} = errors_on(changeset(%{priority: 5}))
   end
