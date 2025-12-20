@@ -107,6 +107,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     <div class="mt-3 flex flex-wrap items-center gap-3">
       <.status_badge status={@application.status} />
       <.priority priority={@application.priority} />
+      <.tag_list tags={@application.tags} />
     </div>
 
     <div class="mt-8 grid gap-6 lg:grid-cols-3">

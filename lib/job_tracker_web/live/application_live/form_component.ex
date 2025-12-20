@@ -81,6 +81,12 @@ defmodule JobTrackerWeb.ApplicationLive.FormComponent do
           placeholder="https://"
         />
         <.input
+          field={@form[:tag_names]}
+          type="text"
+          label="Tags"
+          placeholder="remote, fintech, referral"
+        />
+        <.input
           field={@form[:description]}
           type="textarea"
           label="Job description"

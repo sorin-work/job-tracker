@@ -1,7 +1,7 @@
 defmodule JobTracker.Pipeline do
   @moduledoc """
-  Job applications and the status history that is recorded as they move
-  through the pipeline.
+  Job applications, the status history that is recorded as they move through
+  the pipeline, and the tags used to group them.
 
   Every function takes the current user and only ever touches that user's data.
   """
@@ -11,13 +11,13 @@ defmodule JobTracker.Pipeline do
   alias Ecto.Multi
   alias JobTracker.Accounts.User
   alias JobTracker.Companies
-  alias JobTracker.Pipeline.{JobApplication, Status, StatusChange}
+  alias JobTracker.Pipeline.{JobApplication, Status, StatusChange, Tag}
   alias JobTracker.Repo
 
   ## Listing
 
   @doc """
-  Lists applications with their company.
+  Lists applications with their company and tags.
 
   ## Options
 
@@ -28,7 +28,7 @@ defmodule JobTracker.Pipeline do
     |> base_query(opts)
     |> order_by([a], desc: a.updated_at, desc: a.id)
     |> Repo.all()
-    |> Repo.preload(:company)
+    |> Repo.preload([:company, :tags])
   end
 
   defp base_query(user, opts) do
@@ -49,7 +49,7 @@ defmodule JobTracker.Pipeline do
         from a in JobApplication,
           where: a.user_id == ^user.id,
           order_by: [asc: a.position],
-          preload: [:company]
+          preload: [:company, :tags]
       )
 
     grouped = Enum.group_by(applications, & &1.status)
@@ -66,13 +66,24 @@ defmodule JobTracker.Pipeline do
     |> Repo.get_by!(id: id, user_id: user.id)
     |> Repo.preload([
       :company,
+      :tags,
       :status_changes
     ])
   end
 
   def change_application(%JobApplication{} = application, attrs \\ %{}) do
-    JobApplication.changeset(application, attrs)
+    application
+    |> Repo.preload(:tags)
+    |> with_tag_names()
+    |> JobApplication.changeset(attrs)
   end
+
+  defp with_tag_names(%JobApplication{tag_names: nil, tags: tags} = application)
+       when is_list(tags) do
+    %{application | tag_names: Enum.map_join(tags, ", ", & &1.name)}
+  end
+
+  defp with_tag_names(application), do: application
 
   @doc """
   Creates an application and records its first status in the history.
@@ -82,7 +93,7 @@ defmodule JobTracker.Pipeline do
   """
   def create_application(%User{} = user, attrs) do
     now = DateTime.utc_now(:second)
-    changeset = JobApplication.changeset(%JobApplication{user_id: user.id}, attrs)
+    changeset = JobApplication.changeset(%JobApplication{user_id: user.id, tags: []}, attrs)
 
     if changeset.valid?,
       do: insert_application(user, changeset, now),
@@ -92,13 +103,15 @@ defmodule JobTracker.Pipeline do
   defp insert_application(user, changeset, now) do
     Multi.new()
     |> Multi.run(:company, fn _repo, _ -> resolve_company(user, changeset) end)
-    |> Multi.insert(:application, fn %{company: company} ->
+    |> Multi.run(:tags, fn _repo, _ -> upsert_tags(user, changeset) end)
+    |> Multi.insert(:application, fn %{company: company, tags: tags} ->
       status = Ecto.Changeset.get_field(changeset, :status)
 
       changeset
       |> Ecto.Changeset.put_change(:company_id, company.id)
       |> Ecto.Changeset.put_change(:position, next_position(user, status))
       |> maybe_set_applied_on(user, status)
+      |> JobApplication.put_tags(tags)
     end)
     |> Multi.insert(:status_change, fn %{application: application} ->
       %StatusChange{
@@ -119,6 +132,7 @@ defmodule JobTracker.Pipeline do
   Updates an application. A status change is recorded in the history.
   """
   def update_application(%User{} = user, %JobApplication{} = application, attrs) do
+    application = Repo.preload(application, :tags)
     changeset = JobApplication.changeset(application, attrs)
 
     if changeset.valid?,
@@ -129,12 +143,18 @@ defmodule JobTracker.Pipeline do
   defp save_application(user, application, changeset) do
     Multi.new()
     |> Multi.run(:company, fn _repo, _ -> resolve_company(user, changeset) end)
-    |> Multi.update(:application, fn %{company: company} ->
+    |> Multi.run(:tags, fn _repo, _ ->
+      if Ecto.Changeset.get_change(changeset, :tag_names),
+        do: upsert_tags(user, changeset),
+        else: {:ok, application.tags}
+    end)
+    |> Multi.update(:application, fn %{company: company, tags: tags} ->
       status = Ecto.Changeset.get_field(changeset, :status)
 
       changeset
       |> Ecto.Changeset.put_change(:company_id, company.id)
       |> maybe_set_applied_on(user, status)
+      |> JobApplication.put_tags(tags)
     end)
     |> record_status_change(user, application)
     |> Repo.transaction()
@@ -319,5 +339,58 @@ defmodule JobTracker.Pipeline do
       end)
 
     Enum.sort_by(status_events, & &1.at, {:desc, DateTime})
+  end
+
+  ## Tags
+
+  @doc """
+  The user's tags with the number of applications using each one.
+  """
+  def list_tags(%User{} = user) do
+    Repo.all(
+      from t in Tag,
+        left_join: at in "job_application_tags",
+        on: at.tag_id == t.id,
+        where: t.user_id == ^user.id,
+        group_by: t.id,
+        order_by: t.name,
+        select_merge: %{usage_count: count(at.job_application_id)}
+    )
+  end
+
+  def get_tag!(%User{} = user, id), do: Repo.get_by!(Tag, id: id, user_id: user.id)
+
+  def create_tag(%User{} = user, attrs) do
+    %Tag{user_id: user.id}
+    |> Tag.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tag(%Tag{} = tag, attrs) do
+    tag
+    |> Tag.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tag(%Tag{} = tag), do: Repo.delete(tag)
+
+  def change_tag(%Tag{} = tag, attrs \\ %{}), do: Tag.changeset(tag, attrs)
+
+  defp upsert_tags(user, changeset) do
+    names = changeset |> Ecto.Changeset.get_field(:tag_names) |> Tag.parse_names()
+
+    existing = Repo.all(from t in Tag, where: t.user_id == ^user.id and t.name in ^names)
+    existing_names = MapSet.new(existing, & &1.name)
+
+    created =
+      for name <- names, name not in existing_names do
+        Repo.insert!(%Tag{user_id: user.id, name: name},
+          on_conflict: {:replace, [:updated_at]},
+          conflict_target: {:unsafe_fragment, "(user_id, lower(name))"}
+        )
+      end
+
+    by_name = Map.new(existing ++ created, &{&1.name, &1})
+    {:ok, Enum.map(names, &Map.fetch!(by_name, &1))}
   end
 end

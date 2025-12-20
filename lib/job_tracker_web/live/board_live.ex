@@ -88,6 +88,7 @@ defmodule JobTrackerWeb.BoardLive do
                 application.salary_currency
               )}
             </p>
+            <.tag_list tags={application.tags} class="mt-2" />
             <div class="mt-2 flex items-center justify-between">
               <.priority priority={application.priority} />
               <span class="text-[11px] text-zinc-400" title="Days since last change">

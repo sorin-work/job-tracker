@@ -22,7 +22,7 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
   defp apply_action(socket, :new) do
     socket
     |> assign(:page_title, "New application")
-    |> assign(:application, %JobApplication{})
+    |> assign(:application, %JobApplication{tags: []})
   end
 
   defp apply_action(socket, :index) do
@@ -90,6 +90,7 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
               >
                 {application.title}
               </.link>
+              <.tag_list tags={application.tags} class="mt-1" />
             </td>
             <td class="px-4 py-3 text-zinc-700">{application.company.name}</td>
             <td class="px-4 py-3"><.status_badge status={application.status} /></td>

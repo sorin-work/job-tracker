@@ -26,4 +26,14 @@ defmodule JobTracker.PipelineFixtures do
 
     application
   end
+
+  def tag_fixture(user, attrs \\ %{}) do
+    {:ok, tag} =
+      JobTracker.Pipeline.create_tag(
+        user,
+        Enum.into(attrs, %{name: "tag #{System.unique_integer([:positive])}", color: "sky"})
+      )
+
+    tag
+  end
 end

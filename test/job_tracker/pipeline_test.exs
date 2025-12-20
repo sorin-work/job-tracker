@@ -66,6 +66,17 @@ defmodule JobTracker.PipelineTest do
       assert application.applied_on == date
     end
 
+    test "creates and attaches tags from a comma separated list", %{user: user} do
+      existing = tag_fixture(user, name: "remote")
+
+      application = application_fixture(user, tag_names: "remote, fintech")
+      application = Pipeline.get_application!(user, application.id)
+
+      assert Enum.map(application.tags, & &1.name) == ["fintech", "remote"]
+      assert Enum.any?(application.tags, &(&1.id == existing.id))
+      assert length(Pipeline.list_tags(user)) == 2
+    end
+
     test "puts new applications at the end of their column", %{user: user} do
       first = application_fixture(user)
       second = application_fixture(user)
@@ -87,6 +98,22 @@ defmodule JobTracker.PipelineTest do
       application = application_fixture(user)
       assert {:ok, _} = Pipeline.update_application(user, application, %{title: "Renamed"})
       assert history(application) == [{nil, :wishlist}]
+    end
+
+    test "keeps tags when tag names are not part of the update", %{user: user} do
+      application = application_fixture(user, tag_names: "remote")
+      application = Pipeline.get_application!(user, application.id)
+
+      {:ok, _} = Pipeline.update_application(user, application, %{title: "Renamed"})
+      assert [%{name: "remote"}] = Pipeline.get_application!(user, application.id).tags
+    end
+
+    test "replaces tags", %{user: user} do
+      application = application_fixture(user, tag_names: "remote")
+      application = Pipeline.get_application!(user, application.id)
+
+      {:ok, _} = Pipeline.update_application(user, application, %{tag_names: "onsite"})
+      assert [%{name: "onsite"}] = Pipeline.get_application!(user, application.id).tags
     end
 
     test "returns errors", %{user: user} do
@@ -185,5 +212,36 @@ defmodule JobTracker.PipelineTest do
     application = application_fixture(user)
     assert {:ok, _} = Pipeline.delete_application(application)
     assert Repo.aggregate(StatusChange, :count) == 0
+  end
+
+  describe "tags" do
+    test "list_tags/1 counts usage", %{user: user} do
+      application_fixture(user, tag_names: "remote, fintech")
+      application_fixture(user, tag_names: "remote")
+
+      assert [%{name: "fintech", usage_count: 1}, %{name: "remote", usage_count: 2}] =
+               Pipeline.list_tags(user)
+    end
+
+    test "update_tag/2 renames and recolors", %{user: user} do
+      tag = tag_fixture(user, name: "remote")
+      assert {:ok, tag} = Pipeline.update_tag(tag, %{name: "remote ok", color: "pink"})
+      assert tag.name == "remote ok"
+      assert tag.color == "pink"
+    end
+
+    test "tag names are unique per user", %{user: user} do
+      tag_fixture(user, name: "remote")
+      assert {:error, changeset} = Pipeline.create_tag(user, %{name: "Remote", color: "sky"})
+      assert %{name: [_]} = errors_on(changeset)
+    end
+
+    test "delete_tag/1 removes it from applications", %{user: user} do
+      application = application_fixture(user, tag_names: "remote")
+      [tag] = Pipeline.list_tags(user)
+
+      assert {:ok, _} = Pipeline.delete_tag(tag)
+      assert Pipeline.get_application!(user, application.id).tags == []
+    end
   end
 end

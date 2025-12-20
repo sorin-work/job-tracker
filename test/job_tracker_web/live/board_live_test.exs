@@ -7,7 +7,7 @@ defmodule JobTrackerWeb.BoardLiveTest do
   setup :register_and_log_in_user
 
   test "shows a column per status with the applications in it", %{conn: conn, user: user} do
-    application_fixture(user, title: "Data Engineer", status: :screening)
+    application_fixture(user, title: "Data Engineer", status: :screening, tag_names: "remote")
 
     {:ok, lv, _html} = live(conn, ~p"/board")
 
@@ -16,6 +16,7 @@ defmodule JobTrackerWeb.BoardLiveTest do
     end
 
     assert lv |> element("#column-screening") |> render() =~ "Data Engineer"
+    assert lv |> element("#column-screening") |> render() =~ "remote"
   end
 
   test "an invalid move shows an error", %{conn: conn, user: user} do

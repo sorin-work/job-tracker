@@ -35,6 +35,40 @@ defmodule JobTrackerWeb.AppComponents do
     """
   end
 
+  @tag_classes %{
+    "zinc" => "bg-zinc-100 text-zinc-700",
+    "red" => "bg-red-100 text-red-700",
+    "amber" => "bg-amber-100 text-amber-800",
+    "emerald" => "bg-emerald-100 text-emerald-700",
+    "sky" => "bg-sky-100 text-sky-700",
+    "indigo" => "bg-indigo-100 text-indigo-700",
+    "violet" => "bg-violet-100 text-violet-700",
+    "pink" => "bg-pink-100 text-pink-700"
+  }
+
+  def tag_classes(color), do: Map.get(@tag_classes, color, @tag_classes["zinc"])
+
+  attr :tag, :map, required: true
+
+  def tag_pill(assigns) do
+    ~H"""
+    <span class={["inline-flex rounded px-1.5 py-0.5 text-xs font-medium", tag_classes(@tag.color)]}>
+      {@tag.name}
+    </span>
+    """
+  end
+
+  attr :tags, :list, required: true
+  attr :class, :string, default: nil
+
+  def tag_list(assigns) do
+    ~H"""
+    <div :if={@tags != []} class={["flex flex-wrap gap-1", @class]}>
+      <.tag_pill :for={tag <- @tags} tag={tag} />
+    </div>
+    """
+  end
+
   attr :priority, :integer, required: true
 
   def priority(assigns) do

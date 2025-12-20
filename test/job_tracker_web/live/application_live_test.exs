@@ -9,12 +9,13 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
 
   describe "Index" do
     test "lists the user's applications", %{conn: conn, user: user} do
-      application_fixture(user, title: "Backend Engineer")
+      application_fixture(user, title: "Backend Engineer", tag_names: "remote")
       application_fixture(JobTracker.AccountsFixtures.user_fixture(), title: "Someone else's job")
 
       {:ok, _lv, html} = live(conn, ~p"/applications")
 
       assert html =~ "Backend Engineer"
+      assert html =~ "remote"
       refute html =~ "Someone else&#39;s job"
     end
 
@@ -34,6 +35,7 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
             status: "applied",
             salary_min: "150000",
             salary_max: "170000",
+            tag_names: "remote, dream job",
             description: "We are hiring a staff engineer."
           }
         )
@@ -44,6 +46,7 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       assert html =~ "Staff Engineer"
       assert html =~ "Brand New Co"
       assert html =~ "$150k – $170k"
+      assert html =~ "dream job"
     end
 
     test "shows validation errors from the context", %{conn: conn, user: user} do

@@ -28,12 +28,18 @@ defmodule JobTracker.Pipeline.JobApplication do
     field :position, :integer, default: 0
 
     field :company_name, :string, virtual: true
+    field :tag_names, :string, virtual: true
 
     belongs_to :user, JobTracker.Accounts.User
     belongs_to :company, JobTracker.Companies.Company
 
     has_many :status_changes, JobTracker.Pipeline.StatusChange,
       preload_order: [desc: :changed_at, desc: :id]
+
+    many_to_many :tags, JobTracker.Pipeline.Tag,
+      join_through: "job_application_tags",
+      on_replace: :delete,
+      preload_order: [asc: :name]
 
     timestamps(type: :utc_datetime)
   end
@@ -59,7 +65,8 @@ defmodule JobTracker.Pipeline.JobApplication do
       :salary_min,
       :salary_max,
       :salary_currency,
-      :notes
+      :notes,
+      :tag_names
     ])
     |> update_change(:salary_currency, &(&1 |> String.trim() |> String.upcase()))
     |> validate_required([:title, :status, :salary_currency])
@@ -119,4 +126,6 @@ defmodule JobTracker.Pipeline.JobApplication do
   def move_changeset(application, status, position) do
     change(application, status: status, position: position)
   end
+
+  def put_tags(changeset, tags), do: put_assoc(changeset, :tags, tags)
 end
