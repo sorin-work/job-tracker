@@ -47,7 +47,10 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
           else: "applications"}
       </:subtitle>
       <:actions>
-        <.link patch={~p"/applications/new"}>
+        <.link navigate={~p"/tags"} class="text-sm font-medium text-zinc-600 hover:text-zinc-900">
+          Manage tags
+        </.link>
+        <.link patch={~p"/applications/new"} class="ml-4">
           <.button>New application</.button>
         </.link>
       </:actions>
