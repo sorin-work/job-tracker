@@ -14,6 +14,9 @@ defmodule JobTracker.Pipeline do
   alias JobTracker.Pipeline.{JobApplication, Status, StatusChange, Tag}
   alias JobTracker.Repo
 
+  @per_page 25
+  @sortable ~w(updated applied company title status salary priority)
+
   ## Listing
 
   @doc """
@@ -21,7 +24,10 @@ defmodule JobTracker.Pipeline do
 
   ## Options
 
+    * `:status` - a status or a list of statuses
     * `:company_id` - only applications for this company
+    * `:tag_id` - only applications with this tag
+    * `:search` - text to look for in the title and company name
   """
   def list_applications(%User{} = user, opts \\ []) do
     user
@@ -31,13 +37,154 @@ defmodule JobTracker.Pipeline do
     |> Repo.preload([:company, :tags])
   end
 
+  @doc """
+  Filters, sorts and paginates applications for the table view.
+
+  Takes the query params as they come from the URL and returns a map with the
+  `:entries` for the page plus `:page`, `:per_page`, `:total` and
+  `:total_pages`. Unknown or invalid params fall back to the defaults.
+  """
+  def search_applications(%User{} = user, params \\ %{}) do
+    opts = [
+      status: parse_status(params["status"]),
+      tag_id: parse_id(params["tag"]),
+      company_id: parse_id(params["company"]),
+      search: params["q"]
+    ]
+
+    query = base_query(user, opts)
+    total = Repo.aggregate(query, :count)
+    total_pages = max(div(total + @per_page - 1, @per_page), 1)
+    page = params["page"] |> parse_id() |> Kernel.||(1)
+
+    entries =
+      query
+      |> sort(params["sort"], params["dir"])
+      |> limit(^@per_page)
+      |> offset(^((page - 1) * @per_page))
+      |> Repo.all()
+      |> Repo.preload([:company, :tags])
+
+    %{entries: entries, page: page, per_page: @per_page, total: total, total_pages: total_pages}
+  end
+
+  def sortable_fields, do: @sortable
+
   defp base_query(user, opts) do
     from(a in JobApplication, as: :application, where: a.user_id == ^user.id)
+    |> filter_status(opts[:status])
     |> filter_company(opts[:company_id])
+    |> filter_tag(opts[:tag_id])
+    |> filter_search(opts[:search])
   end
+
+  defp filter_status(query, nil), do: query
+
+  defp filter_status(query, statuses) when is_list(statuses),
+    do: where(query, [a], a.status in ^statuses)
+
+  defp filter_status(query, status), do: where(query, [a], a.status == ^status)
 
   defp filter_company(query, nil), do: query
   defp filter_company(query, company_id), do: where(query, [a], a.company_id == ^company_id)
+
+  defp filter_tag(query, nil), do: query
+
+  defp filter_tag(query, tag_id) do
+    where(
+      query,
+      [a],
+      exists(
+        from t in "job_application_tags",
+          where: t.job_application_id == parent_as(:application).id and t.tag_id == ^tag_id,
+          select: 1
+      )
+    )
+  end
+
+  defp filter_search(query, search) when is_binary(search) do
+    case search do
+      "" ->
+        query
+
+      text ->
+        pattern = "%" <> Companies.escape_like(text) <> "%"
+
+        query
+        |> join_company()
+        |> where([a, company: c], ilike(a.title, ^pattern) or ilike(c.name, ^pattern))
+    end
+  end
+
+  defp filter_search(query, _search), do: query
+
+  defp join_company(query) do
+    if has_named_binding?(query, :company) do
+      query
+    else
+      join(query, :inner, [a], c in assoc(a, :company), as: :company)
+    end
+  end
+
+  defp sort(query, field, dir) do
+    field = if field in @sortable, do: field, else: "updated"
+    dir = if dir == "asc", do: :asc, else: :desc
+    nulls_last = if dir == :asc, do: :asc_nulls_last, else: :desc_nulls_last
+
+    sort_by(query, field, dir, nulls_last)
+  end
+
+  defp sort_by(query, "updated", dir, _nulls_last),
+    do: order_by(query, [a], [{^dir, a.updated_at}, {^dir, a.id}])
+
+  defp sort_by(query, "applied", dir, nulls_last),
+    do: order_by(query, [a], [{^nulls_last, a.applied_on}, {^dir, a.id}])
+
+  defp sort_by(query, "title", dir, _nulls_last),
+    do: order_by(query, [a], [{^dir, fragment("lower(?)", a.title)}, {^dir, a.id}])
+
+  defp sort_by(query, "company", dir, _nulls_last) do
+    query
+    |> join_company()
+    |> order_by([a, company: c], [{^dir, fragment("lower(?)", c.name)}, {^dir, a.id}])
+  end
+
+  defp sort_by(query, "status", dir, _nulls_last),
+    do: order_by(query, ^[{dir, status_order_fragment()}, {dir, dynamic([a], a.id)}])
+
+  defp sort_by(query, "salary", dir, nulls_last),
+    do: order_by(query, [a], [{^nulls_last, coalesce(a.salary_max, a.salary_min)}, {^dir, a.id}])
+
+  defp sort_by(query, "priority", dir, _nulls_last),
+    do: order_by(query, [a], [{^dir, a.priority}, {^dir, a.id}])
+
+  defp status_order_fragment do
+    statuses = Enum.map(Status.all(), &Atom.to_string/1)
+    dynamic([a], fragment("array_position(?::varchar[], ?)", ^statuses, a.status))
+  end
+
+  defp parse_status(nil), do: nil
+  defp parse_status(""), do: nil
+  defp parse_status("open"), do: Status.open()
+  defp parse_status("closed"), do: Status.closed()
+
+  defp parse_status(value) do
+    case Status.cast(value) do
+      {:ok, status} -> status
+      :error -> nil
+    end
+  end
+
+  defp parse_id(value) when is_integer(value) and value > 0, do: value
+
+  defp parse_id(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {id, ""} when id > 0 -> id
+      _ -> nil
+    end
+  end
+
+  defp parse_id(_value), do: nil
 
   @doc """
   Applications grouped by status for the board, each column ordered by its
