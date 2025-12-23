@@ -188,6 +188,7 @@ defmodule JobTracker.PipelineTest do
 
       assert {:error, :invalid_status} = Pipeline.move_application(user, card.id, "hired", 0)
       assert {:error, :not_found} = Pipeline.move_application(user, other.id, "applied", 0)
+      assert {:error, :not_found} = Pipeline.move_application(user, "nope", "applied", 0)
     end
   end
 

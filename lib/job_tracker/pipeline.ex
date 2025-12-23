@@ -349,6 +349,7 @@ defmodule JobTracker.Pipeline do
   """
   def move_application(%User{} = user, id, status, index) do
     with {:ok, status} <- Status.cast(status),
+         id when is_integer(id) <- parse_id(id),
          %JobApplication{} = application <- Repo.get_by(JobApplication, id: id, user_id: user.id) do
       siblings =
         Repo.all(
