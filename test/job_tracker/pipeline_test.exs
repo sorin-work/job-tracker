@@ -198,6 +198,71 @@ defmodule JobTracker.PipelineTest do
     end
   end
 
+  describe "search_applications/2" do
+    test "filters by status, open/closed, tag and text", %{user: user} do
+      acme = company_fixture(user, name: "Acme")
+
+      a =
+        application_fixture(user,
+          title: "Backend Engineer",
+          status: :applied,
+          company_id: acme.id
+        )
+
+      b =
+        application_fixture(user,
+          title: "Frontend Engineer",
+          status: :rejected,
+          tag_names: "remote"
+        )
+
+      _other = application_fixture(user_fixture(), title: "Backend Engineer")
+
+      ids = fn params ->
+        Pipeline.search_applications(user, params).entries |> Enum.map(& &1.id)
+      end
+
+      assert ids.(%{"status" => "applied"}) == [a.id]
+      assert ids.(%{"status" => "closed"}) == [b.id]
+      assert ids.(%{"status" => "open"}) == [a.id]
+      assert ids.(%{"q" => "backend"}) == [a.id]
+      assert ids.(%{"q" => "acme"}) == [a.id]
+      assert ids.(%{"tag" => to_string(hd(Pipeline.list_tags(user)).id)}) == [b.id]
+      assert length(ids.(%{"status" => "bogus"})) == 2
+    end
+
+    test "sorts by the given field", %{user: user} do
+      b = application_fixture(user, title: "b role", salary_max: 100)
+      a = application_fixture(user, title: "A role", salary_max: 300)
+      c = application_fixture(user, title: "c role")
+
+      ids = fn params ->
+        Pipeline.search_applications(user, params).entries |> Enum.map(& &1.id)
+      end
+
+      assert ids.(%{"sort" => "title", "dir" => "asc"}) == [a.id, b.id, c.id]
+      assert ids.(%{"sort" => "title", "dir" => "desc"}) == [c.id, b.id, a.id]
+      assert ids.(%{"sort" => "salary", "dir" => "desc"}) == [a.id, b.id, c.id]
+      assert ids.(%{"sort" => "status"}) |> length() == 3
+      assert ids.(%{"sort" => "company", "q" => "role"}) |> length() == 3
+    end
+
+    test "paginates", %{user: user} do
+      company = company_fixture(user)
+      for _ <- 1..27, do: application_fixture(user, company_id: company.id)
+
+      first = Pipeline.search_applications(user, %{})
+      assert length(first.entries) == 25
+      assert first.total == 27
+      assert first.total_pages == 2
+
+      second = Pipeline.search_applications(user, %{"page" => "2"})
+      assert length(second.entries) == 2
+
+      assert Pipeline.search_applications(user, %{"page" => "x"}).page == 1
+    end
+  end
+
   test "timeline/1 lists status changes newest first", %{user: user} do
     application = application_fixture(user)
     {:ok, application} = Pipeline.change_status(user, application, :applied)

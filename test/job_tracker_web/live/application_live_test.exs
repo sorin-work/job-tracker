@@ -19,6 +19,31 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       refute html =~ "Someone else&#39;s job"
     end
 
+    test "filters by search text and status", %{conn: conn, user: user} do
+      application_fixture(user, title: "Backend Engineer", status: :applied)
+      application_fixture(user, title: "Designer", status: :wishlist)
+
+      {:ok, lv, _html} = live(conn, ~p"/applications")
+
+      html = lv |> form("#filters", filters: %{q: "backend"}) |> render_change()
+      assert_patch(lv, ~p"/applications?q=backend")
+      assert html =~ "Backend Engineer"
+      refute html =~ "Designer"
+
+      {:ok, _lv, html} = live(conn, ~p"/applications?status=wishlist")
+      assert html =~ "Designer"
+      refute html =~ "Backend Engineer"
+    end
+
+    test "sorts by a column", %{conn: conn, user: user} do
+      application_fixture(user, title: "Alpha role")
+      application_fixture(user, title: "Zulu role")
+
+      {:ok, lv, _html} = live(conn, ~p"/applications?sort=title&dir=asc")
+      html = lv |> element("#applications") |> render()
+      assert :binary.match(html, "Alpha role") < :binary.match(html, "Zulu role")
+    end
+
     test "creates an application with a new company", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/applications/new")
 
