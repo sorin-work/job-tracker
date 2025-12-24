@@ -195,7 +195,7 @@ defmodule JobTracker.Pipeline do
       Repo.all(
         from a in JobApplication,
           where: a.user_id == ^user.id,
-          order_by: [asc: a.position],
+          order_by: [asc: a.position, desc: a.updated_at],
           preload: [:company, :tags]
       )
 
