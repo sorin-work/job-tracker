@@ -78,6 +78,17 @@ defmodule JobTracker.CompaniesTest do
     end
   end
 
+  test "get_company!/2 does not return other users' companies", %{user: user} do
+    company = company_fixture(user_fixture())
+    assert_raise Ecto.NoResultsError, fn -> Companies.get_company!(user, company.id) end
+  end
+
+  test "update_company/2 updates the company", %{user: user} do
+    company = company_fixture(user)
+    assert {:ok, company} = Companies.update_company(company, %{industry: "Fintech"})
+    assert company.industry == "Fintech"
+  end
+
   describe "delete_company/1" do
     test "deletes a company without applications", %{user: user} do
       company = company_fixture(user)
