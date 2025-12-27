@@ -69,7 +69,7 @@ defmodule JobTracker.PipelineTest do
     test "creates and attaches tags from a comma separated list", %{user: user} do
       existing = tag_fixture(user, name: "remote")
 
-      application = application_fixture(user, tag_names: "remote, fintech")
+      application = application_fixture(user, tag_names: "Remote, fintech")
       application = Pipeline.get_application!(user, application.id)
 
       assert Enum.map(application.tags, & &1.name) == ["fintech", "remote"]
@@ -291,7 +291,7 @@ defmodule JobTracker.PipelineTest do
 
     test "update_tag/2 renames and recolors", %{user: user} do
       tag = tag_fixture(user, name: "remote")
-      assert {:ok, tag} = Pipeline.update_tag(tag, %{name: "remote ok", color: "pink"})
+      assert {:ok, tag} = Pipeline.update_tag(tag, %{name: "Remote OK", color: "pink"})
       assert tag.name == "remote ok"
       assert tag.color == "pink"
     end

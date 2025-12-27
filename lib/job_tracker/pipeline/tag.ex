@@ -39,9 +39,15 @@ defmodule JobTracker.Pipeline.Tag do
   end
 
   @doc """
-  Trims whitespace around a tag name.
+  Lowercases a tag name and collapses whitespace, so "Remote " and "remote"
+  end up as the same tag.
   """
-  def normalize_name(name) when is_binary(name), do: String.trim(name)
+  def normalize_name(name) when is_binary(name) do
+    name
+    |> String.trim()
+    |> String.downcase()
+    |> String.replace(~r/\s+/, " ")
+  end
 
   def normalize_name(name), do: name
 
