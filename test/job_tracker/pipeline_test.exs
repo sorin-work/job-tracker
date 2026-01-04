@@ -55,6 +55,18 @@ defmodule JobTracker.PipelineTest do
       assert application.company_id == company.id
     end
 
+    test "does not accept another user's company", %{user: user} do
+      other_company = company_fixture(user_fixture())
+
+      assert {:error, changeset} =
+               Pipeline.create_application(user, %{
+                 title: "Engineer",
+                 company_id: other_company.id
+               })
+
+      assert %{company_id: ["is not valid"]} = errors_on(changeset)
+    end
+
     test "fills in the application date when created as applied", %{user: user} do
       application = application_fixture(user, status: :applied)
       assert application.applied_on == Date.utc_today()
@@ -262,6 +274,11 @@ defmodule JobTracker.PipelineTest do
 
       assert Pipeline.search_applications(user, %{"page" => "x"}).page == 1
     end
+  end
+
+  test "get_application!/2 is scoped to the user", %{user: user} do
+    application = application_fixture(user_fixture())
+    assert_raise Ecto.NoResultsError, fn -> Pipeline.get_application!(user, application.id) end
   end
 
   test "timeline/1 lists status changes newest first", %{user: user} do
