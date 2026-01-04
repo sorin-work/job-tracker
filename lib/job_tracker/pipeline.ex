@@ -103,7 +103,7 @@ defmodule JobTracker.Pipeline do
   end
 
   defp filter_search(query, search) when is_binary(search) do
-    case search do
+    case String.trim(search) do
       "" ->
         query
 
