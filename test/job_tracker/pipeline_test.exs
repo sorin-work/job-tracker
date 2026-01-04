@@ -67,6 +67,11 @@ defmodule JobTracker.PipelineTest do
       assert %{company_id: ["is not valid"]} = errors_on(changeset)
     end
 
+    test "returns the changeset with errors for invalid data", %{user: user} do
+      assert {:error, changeset} = Pipeline.create_application(user, %{title: ""})
+      assert %{title: ["can't be blank"], company_id: [_]} = errors_on(changeset)
+    end
+
     test "fills in the application date when created as applied", %{user: user} do
       application = application_fixture(user, status: :applied)
       assert application.applied_on == Date.utc_today()
