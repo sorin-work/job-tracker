@@ -115,6 +115,16 @@ defmodule JobTrackerWeb.ContactLive.Index do
       </:col>
       <:col :let={contact} label="Phone">{contact.phone}</:col>
       <:action :let={contact}>
+        <a
+          :if={contact.linkedin_url}
+          href={contact.linkedin_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+      </:action>
+      <:action :let={contact}>
         <.link patch={~p"/contacts/#{contact}/edit"}>Edit</.link>
       </:action>
       <:action :let={contact}>
