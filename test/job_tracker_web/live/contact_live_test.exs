@@ -37,4 +37,18 @@ defmodule JobTrackerWeb.ContactLiveTest do
     assert html =~ "Bill Lumbergh"
     assert html =~ "Initech"
   end
+
+  test "edits and deletes a contact", %{conn: conn, user: user} do
+    contact = contact_fixture(user, name: "Priya Raman")
+
+    {:ok, lv, _html} = live(conn, ~p"/contacts/#{contact}/edit")
+
+    html =
+      lv |> form("#contact-form", contact: %{title: "Engineering Manager"}) |> render_submit()
+
+    assert html =~ "Engineering Manager"
+
+    lv |> element("#contacts-#{contact.id} a", "Delete") |> render_click()
+    refute has_element?(lv, "#contacts-#{contact.id}")
+  end
 end
