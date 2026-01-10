@@ -15,6 +15,7 @@ defmodule JobTracker.Companies.Company do
 
     belongs_to :user, JobTracker.Accounts.User
     has_many :job_applications, JobTracker.Pipeline.JobApplication
+    has_many :contacts, JobTracker.Contacts.Contact
 
     timestamps(type: :utc_datetime)
   end
