@@ -2,6 +2,7 @@ defmodule JobTrackerWeb.CompanyLive.Show do
   use JobTrackerWeb, :live_view
 
   alias JobTracker.Companies
+  alias JobTracker.Contacts
   alias JobTracker.Pipeline
 
   @impl true
@@ -24,6 +25,7 @@ defmodule JobTrackerWeb.CompanyLive.Show do
     socket
     |> assign(:company, company)
     |> assign(:applications, Pipeline.list_applications(user, company_id: company.id))
+    |> assign(:contacts, Contacts.list_contacts(user, company_id: company.id))
   end
 
   @impl true
@@ -80,6 +82,21 @@ defmodule JobTrackerWeb.CompanyLive.Show do
               {application.title}
             </.link>
             <.status_badge status={application.status} />
+          </li>
+        </ul>
+      </.panel>
+
+      <.panel id="company-contacts" title="Contacts">
+        <:actions>
+          <.link navigate={~p"/contacts/new?company_id=#{@company.id}"} class="font-medium text-brand">
+            Add
+          </.link>
+        </:actions>
+        <.empty_state :if={@contacts == []}>No contacts yet.</.empty_state>
+        <ul class="space-y-3 text-sm">
+          <li :for={contact <- @contacts}>
+            <p class="font-medium text-zinc-900">{contact.name}</p>
+            <p :if={contact.title} class="text-zinc-500">{contact.title}</p>
           </li>
         </ul>
       </.panel>

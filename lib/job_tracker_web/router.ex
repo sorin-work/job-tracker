@@ -77,6 +77,10 @@ defmodule JobTrackerWeb.Router do
       live "/companies/:id", CompanyLive.Show, :show
       live "/companies/:id/show/edit", CompanyLive.Show, :edit
 
+      live "/contacts", ContactLive.Index, :index
+      live "/contacts/new", ContactLive.Index, :new
+      live "/contacts/:id/edit", ContactLive.Index, :edit
+
       live "/tags", TagLive.Index, :index
       live "/tags/:id/edit", TagLive.Index, :edit
     end

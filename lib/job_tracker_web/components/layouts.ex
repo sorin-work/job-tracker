@@ -16,7 +16,8 @@ defmodule JobTrackerWeb.Layouts do
     [
       {"Board", ~p"/board", :board},
       {"Applications", ~p"/applications", :applications},
-      {"Companies", ~p"/companies", :companies}
+      {"Companies", ~p"/companies", :companies},
+      {"Contacts", ~p"/contacts", :contacts}
     ]
   end
 end

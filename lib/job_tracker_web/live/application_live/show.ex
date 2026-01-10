@@ -1,6 +1,7 @@
 defmodule JobTrackerWeb.ApplicationLive.Show do
   use JobTrackerWeb, :live_view
 
+  alias JobTracker.Contacts
   alias JobTracker.Pipeline
   alias JobTracker.Pipeline.Status
 
@@ -20,9 +21,12 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   end
 
   defp assign_application(socket, application) do
+    user = socket.assigns.current_user
+
     socket
     |> assign(:application, application)
     |> assign(:timeline, Pipeline.timeline(application))
+    |> assign(:contacts, Contacts.list_contacts(user, company_id: application.company_id))
     |> assign(:status_form, to_form(%{"status" => application.status, "note" => ""}, as: :status))
   end
 
@@ -204,6 +208,31 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
             />
             <.button class="w-full" phx-disable-with="Saving...">Update status</.button>
           </.form>
+        </.panel>
+
+        <.panel title={"People at #{@application.company.name}"}>
+          <:actions>
+            <.link
+              navigate={~p"/contacts/new?company_id=#{@application.company_id}"}
+              class="font-medium text-brand"
+            >
+              Add
+            </.link>
+          </:actions>
+          <.empty_state :if={@contacts == []}>No contacts at this company yet.</.empty_state>
+          <ul class="space-y-3 text-sm">
+            <li :for={contact <- @contacts}>
+              <p class="font-medium text-zinc-900">{contact.name}</p>
+              <p :if={contact.title} class="text-zinc-500">{contact.title}</p>
+              <a
+                :if={contact.email}
+                href={"mailto:#{contact.email}"}
+                class="text-brand hover:underline"
+              >
+                {contact.email}
+              </a>
+            </li>
+          </ul>
         </.panel>
 
         <button

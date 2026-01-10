@@ -2,6 +2,7 @@ defmodule JobTrackerWeb.CompanyLiveTest do
   use JobTrackerWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import JobTracker.ActivityFixtures
   import JobTracker.CompaniesFixtures
   import JobTracker.PipelineFixtures
 
@@ -58,10 +59,12 @@ defmodule JobTrackerWeb.CompanyLiveTest do
   test "shows a company with its applications and contacts", %{conn: conn, user: user} do
     company = company_fixture(user, name: "Initech", notes: "Great snacks")
     application_fixture(user, company_id: company.id, title: "Printer Engineer")
+    contact_fixture(user, company_id: company.id, name: "Bill Lumbergh")
 
     {:ok, lv, html} = live(conn, ~p"/companies/#{company}")
     assert html =~ "Great snacks"
     assert lv |> element("#company-applications") |> render() =~ "Printer Engineer"
+    assert lv |> element("#company-contacts") |> render() =~ "Bill Lumbergh"
 
     {:ok, lv, _html} = live(conn, ~p"/companies/#{company}/show/edit")
     html = lv |> form("#company-form", company: %{location: "Austin"}) |> render_submit()
