@@ -109,7 +109,9 @@ defmodule JobTrackerWeb.ContactLive.Index do
         <span :if={!contact.company}>—</span>
       </:col>
       <:col :let={contact} label="Email">
-        {contact.email}
+        <a :if={contact.email} href={"mailto:#{contact.email}"} class="text-brand hover:underline">
+          {contact.email}
+        </a>
       </:col>
       <:col :let={contact} label="Phone">{contact.phone}</:col>
       <:action :let={contact}>
