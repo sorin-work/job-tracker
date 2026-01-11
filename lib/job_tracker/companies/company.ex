@@ -6,6 +6,8 @@ defmodule JobTracker.Companies.Company do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import JobTracker.Validation
+
   schema "companies" do
     field :name, :string
     field :website, :string
@@ -24,13 +26,12 @@ defmodule JobTracker.Companies.Company do
   def changeset(company, attrs) do
     company
     |> cast(attrs, [:name, :website, :industry, :location, :notes])
+    |> trim_fields([:name, :industry, :location, :notes])
     |> validate_required([:name])
     |> validate_length(:name, max: 120)
     |> validate_length(:industry, max: 80)
     |> validate_length(:location, max: 120)
-    |> validate_format(:website, ~r/^https?:\/\/[^\s\/]+\.[^\s]+$/,
-      message: "must be a valid URL"
-    )
+    |> validate_url(:website)
     |> unique_constraint(:name,
       name: :companies_user_id_name_index,
       message: "you already have a company with this name"

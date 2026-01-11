@@ -6,6 +6,8 @@ defmodule JobTracker.Contacts.Contact do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import JobTracker.Validation
+
   schema "contacts" do
     field :name, :string
     field :title, :string
@@ -34,15 +36,14 @@ defmodule JobTracker.Contacts.Contact do
       :last_contacted_on,
       :company_id
     ])
+    |> trim_fields([:name, :title, :email, :phone, :notes])
     |> validate_required([:name])
     |> validate_length(:name, max: 120)
     |> validate_length(:title, max: 120)
     |> validate_length(:email, max: 160)
     |> validate_format(:email, ~r/@/, message: "must be a valid email address")
     |> validate_format(:phone, ~r/^[0-9+()\-.\s]{5,30}$/, message: "must be a valid phone number")
-    |> validate_format(:linkedin_url, ~r/^https?:\/\/[^\s\/]+\.[^\s]+$/,
-      message: "must be a valid URL"
-    )
+    |> validate_url(:linkedin_url)
     |> assoc_constraint(:company)
   end
 end

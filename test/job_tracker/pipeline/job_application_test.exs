@@ -42,6 +42,12 @@ defmodule JobTracker.Pipeline.JobApplicationTest do
              errors_on(changeset(%{posting_url: "ftp://jobs.example.com"}))
 
     assert changeset(%{posting_url: "https://jobs.example.com/123"}).valid?
+
+    assert Ecto.Changeset.get_change(
+             changeset(%{posting_url: "jobs.example.com/1"}),
+             :posting_url
+           ) ==
+             "https://jobs.example.com/1"
   end
 
   test "applied on can't be in the future" do

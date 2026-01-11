@@ -47,9 +47,10 @@ defmodule JobTracker.CompaniesTest do
   describe "create_company/2" do
     test "creates a company", %{user: user} do
       assert {:ok, %Company{} = company} =
-               Companies.create_company(user, %{name: "Acme", website: "https://acme.example.com"})
+               Companies.create_company(user, %{name: " Acme ", website: "acme.example.com"})
 
       assert company.name == "Acme"
+      assert company.website == "https://acme.example.com"
     end
 
     test "requires a name", %{user: user} do

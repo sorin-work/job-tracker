@@ -6,6 +6,8 @@ defmodule JobTracker.Pipeline.JobApplication do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import JobTracker.Validation
+
   alias JobTracker.Pipeline.Status
 
   @work_modes [:onsite, :hybrid, :remote]
@@ -68,6 +70,7 @@ defmodule JobTracker.Pipeline.JobApplication do
       :notes,
       :tag_names
     ])
+    |> trim_fields([:title, :company_name, :location, :description, :notes])
     |> update_change(:salary_currency, &(&1 |> String.trim() |> String.upcase()))
     |> validate_required([:title, :status, :salary_currency])
     |> validate_company()
@@ -75,9 +78,7 @@ defmodule JobTracker.Pipeline.JobApplication do
     |> validate_length(:location, max: 120)
     |> validate_length(:description, max: 50_000)
     |> validate_inclusion(:priority, 1..3)
-    |> validate_format(:posting_url, ~r/^https?:\/\/[^\s\/]+\.[^\s]+$/,
-      message: "must be a valid URL"
-    )
+    |> validate_url(:posting_url)
     |> validate_format(:salary_currency, ~r/^[A-Z]{3}$/,
       message: "must be a 3 letter code like USD"
     )

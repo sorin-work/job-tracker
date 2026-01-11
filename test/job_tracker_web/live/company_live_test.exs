@@ -29,9 +29,7 @@ defmodule JobTrackerWeb.CompanyLiveTest do
 
     html =
       lv
-      |> form("#company-form",
-        company: %{name: "Initech", website: "https://initech.example.com"}
-      )
+      |> form("#company-form", company: %{name: "Initech", website: "initech.example.com"})
       |> render_submit()
 
     assert_patch(lv, ~p"/companies")
