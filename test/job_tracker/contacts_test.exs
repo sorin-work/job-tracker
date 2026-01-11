@@ -21,6 +21,16 @@ defmodule JobTracker.ContactsTest do
              Contacts.list_contacts(user)
   end
 
+  test "list_contacts/2 filters by company and search text", %{user: user} do
+    company = company_fixture(user, name: "Acme")
+    contact_fixture(user, name: "Priya", company_id: company.id)
+    contact_fixture(user, name: "Tom", title: "Engineering Manager")
+
+    assert [%{name: "Priya"}] = Contacts.list_contacts(user, company_id: company.id)
+    assert [%{name: "Priya"}] = Contacts.list_contacts(user, search: "acme")
+    assert [%{name: "Tom"}] = Contacts.list_contacts(user, search: "manager")
+  end
+
   describe "create_contact/2" do
     test "validates email, phone and linkedin url", %{user: user} do
       assert {:error, changeset} =
