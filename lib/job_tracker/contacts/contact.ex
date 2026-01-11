@@ -41,7 +41,9 @@ defmodule JobTracker.Contacts.Contact do
     |> validate_length(:name, max: 120)
     |> validate_length(:title, max: 120)
     |> validate_length(:email, max: 160)
-    |> validate_format(:email, ~r/@/, message: "must be a valid email address")
+    |> validate_format(:email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "must be a valid email address"
+    )
     |> validate_format(:phone, ~r/^[0-9+()\-.\s]{5,30}$/, message: "must be a valid phone number")
     |> validate_url(:linkedin_url)
     |> assoc_constraint(:company)
