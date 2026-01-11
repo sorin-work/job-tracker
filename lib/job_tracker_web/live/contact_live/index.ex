@@ -114,6 +114,7 @@ defmodule JobTrackerWeb.ContactLive.Index do
         </a>
       </:col>
       <:col :let={contact} label="Phone">{contact.phone}</:col>
+      <:col :let={contact} label="Last contacted">{Format.date(contact.last_contacted_on)}</:col>
       <:action :let={contact}>
         <a
           :if={contact.linkedin_url}
