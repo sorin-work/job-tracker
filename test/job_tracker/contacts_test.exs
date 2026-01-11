@@ -38,6 +38,15 @@ defmodule JobTracker.ContactsTest do
       assert {:error, changeset} = Contacts.create_contact(user, %{name: " "})
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
+
+    test "rejects another user's company", %{user: user} do
+      company = company_fixture(user_fixture())
+
+      assert {:error, changeset} =
+               Contacts.create_contact(user, %{name: "Jane", company_id: company.id})
+
+      assert %{company_id: ["is not valid"]} = errors_on(changeset)
+    end
   end
 
   test "update_contact/3 and delete_contact/1", %{user: user} do

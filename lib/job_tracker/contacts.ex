@@ -7,6 +7,7 @@ defmodule JobTracker.Contacts do
 
   alias JobTracker.Accounts.User
   alias JobTracker.Companies
+  alias JobTracker.Companies.Company
   alias JobTracker.Contacts.Contact
   alias JobTracker.Repo
 
@@ -54,13 +55,29 @@ defmodule JobTracker.Contacts do
   def create_contact(%User{} = user, attrs) do
     %Contact{user_id: user.id}
     |> Contact.changeset(attrs)
+    |> validate_company_owner(user)
     |> Repo.insert()
   end
 
-  def update_contact(%User{} = _user, %Contact{} = contact, attrs) do
+  def update_contact(%User{} = user, %Contact{} = contact, attrs) do
     contact
     |> Contact.changeset(attrs)
+    |> validate_company_owner(user)
     |> Repo.update()
+  end
+
+  defp validate_company_owner(changeset, user) do
+    case Ecto.Changeset.get_change(changeset, :company_id) do
+      nil ->
+        changeset
+
+      id ->
+        if Repo.exists?(from c in Company, where: c.id == ^id and c.user_id == ^user.id) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :company_id, "is not valid")
+        end
+    end
   end
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
