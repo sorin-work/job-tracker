@@ -25,7 +25,7 @@ defmodule JobTracker.Contacts do
     |> join(:left, [c], co in assoc(c, :company), as: :company)
     |> filter_company(opts[:company_id])
     |> filter_search(opts[:search])
-    |> order_by([c], asc: c.name)
+    |> order_by([c], asc: fragment("lower(?)", c.name))
     |> preload([company: co], company: co)
     |> Repo.all()
   end
