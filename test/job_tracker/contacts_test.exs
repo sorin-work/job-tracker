@@ -44,6 +44,10 @@ defmodule JobTracker.ContactsTest do
       assert %{email: [_], phone: [_], linkedin_url: [_]} = errors_on(changeset)
     end
 
+    test "accepts common phone formats", %{user: user} do
+      assert {:ok, _} = Contacts.create_contact(user, %{name: "Jane", phone: "+1 (555) 123-4567"})
+    end
+
     test "requires a name", %{user: user} do
       assert {:error, changeset} = Contacts.create_contact(user, %{name: " "})
       assert %{name: ["can't be blank"]} = errors_on(changeset)
@@ -66,5 +70,13 @@ defmodule JobTracker.ContactsTest do
 
     assert {:ok, _} = Contacts.delete_contact(contact)
     assert_raise Ecto.NoResultsError, fn -> Contacts.get_contact!(user, contact.id) end
+  end
+
+  test "deleting a company keeps its contacts", %{user: user} do
+    company = company_fixture(user)
+    contact = contact_fixture(user, company_id: company.id)
+
+    {:ok, _} = JobTracker.Companies.delete_company(company)
+    assert Contacts.get_contact!(user, contact.id).company_id == nil
   end
 end
