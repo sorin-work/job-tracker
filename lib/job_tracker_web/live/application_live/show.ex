@@ -2,6 +2,8 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   use JobTrackerWeb, :live_view
 
   alias JobTracker.Contacts
+  alias JobTracker.Interviews
+  alias JobTracker.Interviews.Interview
   alias JobTracker.Pipeline
   alias JobTracker.Pipeline.Status
 
@@ -38,6 +40,20 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     assign(socket, :page_title, "Edit #{socket.assigns.application.title}")
   end
 
+  defp apply_action(socket, :new_interview, _params) do
+    socket
+    |> assign(:page_title, "Schedule interview")
+    |> assign(:interview, %Interview{})
+  end
+
+  defp apply_action(socket, :edit_interview, %{"interview_id" => interview_id}) do
+    interview = Interviews.get_interview!(socket.assigns.current_user, interview_id)
+
+    socket
+    |> assign(:page_title, "Edit interview")
+    |> assign(:interview, interview)
+  end
+
   @impl true
   def handle_event("change_status", %{"status" => %{"status" => status} = params}, socket) do
     %{current_user: user, application: application} = socket.assigns
@@ -52,6 +68,12 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Could not change the status")}
     end
+  end
+
+  def handle_event("delete_interview", %{"id" => id}, socket) do
+    interview = Interviews.get_interview!(socket.assigns.current_user, id)
+    {:ok, _} = Interviews.delete_interview(interview)
+    {:noreply, socket |> put_flash(:info, "Interview removed") |> reload()}
   end
 
   def handle_event("delete", _params, socket) do
@@ -172,6 +194,66 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
           </details>
         </.panel>
 
+        <.panel id="interviews" title="Interviews">
+          <:actions>
+            <.link
+              patch={~p"/applications/#{@application}/interviews/new"}
+              class="font-medium text-brand"
+            >
+              Schedule interview
+            </.link>
+          </:actions>
+          <.empty_state :if={@application.interviews == []}>No interviews yet.</.empty_state>
+          <ul class="divide-y divide-zinc-100">
+            <li
+              :for={interview <- @application.interviews}
+              id={"interview-#{interview.id}"}
+              class="py-3 first:pt-0 last:pb-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-medium text-zinc-900">
+                    {Interview.kind_label(interview.kind)}
+                    <span class="ml-2 text-xs font-normal text-zinc-500">
+                      {Format.label(interview.outcome)}
+                    </span>
+                  </p>
+                  <p class="text-sm text-zinc-600">
+                    {Format.datetime(interview.scheduled_at, @current_user)} · {interview.duration_minutes} min
+                    <span :if={interview.interviewers}>· {interview.interviewers}</span>
+                  </p>
+                  <p :if={interview.location} class="text-sm text-zinc-500">{interview.location}</p>
+                </div>
+                <div class="flex shrink-0 gap-3 text-sm">
+                  <.link
+                    patch={~p"/applications/#{@application}/interviews/#{interview}/edit"}
+                    class="font-medium text-zinc-600 hover:text-zinc-900"
+                  >
+                    Edit
+                  </.link>
+                  <.link
+                    phx-click="delete_interview"
+                    phx-value-id={interview.id}
+                    data-confirm="Remove this interview?"
+                    class="font-medium text-zinc-600 hover:text-red-600"
+                  >
+                    Remove
+                  </.link>
+                </div>
+              </div>
+              <p
+                :if={interview.prep_notes}
+                class="mt-2 whitespace-pre-line text-sm text-zinc-700"
+              >
+                {interview.prep_notes}
+              </p>
+              <p :if={interview.feedback} class="mt-2 whitespace-pre-line text-sm text-zinc-600">
+                {interview.feedback}
+              </p>
+            </li>
+          </ul>
+        </.panel>
+
         <.panel id="timeline" title="Timeline">
           <ol class="relative space-y-4 border-l border-zinc-200 pl-5">
             <li :for={event <- @timeline} class="text-sm">
@@ -184,6 +266,11 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
                   </p>
                   <p :if={event.from} class="text-zinc-800">
                     <.status_badge status={event.from} /> → <.status_badge status={event.to} />
+                  </p>
+                <% :interview -> %>
+                  <p class="text-zinc-800">
+                    {Interview.kind_label(event.interview.kind)} interview
+                    <span class="text-zinc-500">({Format.label(event.interview.outcome)})</span>
                   </p>
               <% end %>
             </li>
@@ -257,6 +344,24 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
         id={@application.id}
         title="Edit application"
         action={:edit}
+        application={@application}
+        current_user={@current_user}
+        patch={~p"/applications/#{@application}"}
+      />
+    </.modal>
+
+    <.modal
+      :if={@live_action in [:new_interview, :edit_interview]}
+      id="interview-modal"
+      show
+      on_cancel={JS.patch(~p"/applications/#{@application}")}
+    >
+      <.live_component
+        module={JobTrackerWeb.InterviewLive.FormComponent}
+        id={@interview.id || :new}
+        title={if @live_action == :new_interview, do: "Schedule interview", else: "Edit interview"}
+        action={@live_action}
+        interview={@interview}
         application={@application}
         current_user={@current_user}
         patch={~p"/applications/#{@application}"}

@@ -2,8 +2,11 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
   use JobTrackerWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import JobTracker.ActivityFixtures
   import JobTracker.CompaniesFixtures
   import JobTracker.PipelineFixtures
+
+  alias JobTracker.Pipeline
 
   setup :register_and_log_in_user
 
@@ -129,5 +132,42 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       assert html =~ "Application updated"
       assert html =~ "Senior Platform Engineer"
     end
+
+    test "schedules and edits an interview", %{conn: conn, application: application} do
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}/interviews/new")
+
+      html =
+        lv
+        |> form("#interview-form",
+          interview: %{
+            local_scheduled_at: "2030-05-04T10:00",
+            kind: "technical",
+            prep_notes: "Review SQL"
+          }
+        )
+        |> render_submit()
+
+      assert_patch(lv, ~p"/applications/#{application}")
+      assert html =~ "Interview saved"
+      assert lv |> element("#interviews") |> render() =~ "Review SQL"
+
+      [interview] =
+        Pipeline.get_application!(application_user(application), application.id).interviews
+
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}/interviews/#{interview}/edit")
+
+      lv |> form("#interview-form", interview: %{outcome: "passed"}) |> render_submit()
+      assert lv |> element("#interview-#{interview.id}") |> render() =~ "Passed"
+    end
+
+    test "removes an interview", %{conn: conn, user: user, application: application} do
+      interview = interview_fixture(user, application)
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}")
+
+      lv |> element("#interview-#{interview.id} a", "Remove") |> render_click()
+      refute has_element?(lv, "#interview-#{interview.id}")
+    end
   end
+
+  defp application_user(application), do: JobTracker.Accounts.get_user!(application.user_id)
 end
