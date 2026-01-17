@@ -214,7 +214,8 @@ defmodule JobTracker.Pipeline do
     |> Repo.preload([
       :company,
       :tags,
-      :status_changes
+      :status_changes,
+      :interviews
     ])
   end
 
@@ -471,10 +472,10 @@ defmodule JobTracker.Pipeline do
   ## Timeline
 
   @doc """
-  The events shown on an application's timeline, newest first. Expects the
-  application to come from `get_application!/2`.
+  The events shown on an application's timeline, newest first: status changes
+  and interviews. Expects the application to come from `get_application!/2`.
   """
-  def timeline(%JobApplication{status_changes: changes}) do
+  def timeline(%JobApplication{status_changes: changes, interviews: interviews}) do
     status_events =
       Enum.map(changes, fn change ->
         %{
@@ -486,7 +487,12 @@ defmodule JobTracker.Pipeline do
         }
       end)
 
-    Enum.sort_by(status_events, & &1.at, {:desc, DateTime})
+    interview_events =
+      Enum.map(interviews, fn interview ->
+        %{type: :interview, at: interview.scheduled_at, interview: interview}
+      end)
+
+    Enum.sort_by(status_events ++ interview_events, & &1.at, {:desc, DateTime})
   end
 
   ## Tags

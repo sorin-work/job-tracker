@@ -38,6 +38,8 @@ defmodule JobTracker.Pipeline.JobApplication do
     has_many :status_changes, JobTracker.Pipeline.StatusChange,
       preload_order: [desc: :changed_at, desc: :id]
 
+    has_many :interviews, JobTracker.Interviews.Interview, preload_order: [asc: :scheduled_at]
+
     many_to_many :tags, JobTracker.Pipeline.Tag,
       join_through: "job_application_tags",
       on_replace: :delete,
