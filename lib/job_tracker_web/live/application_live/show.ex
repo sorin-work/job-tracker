@@ -243,7 +243,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
               </div>
               <p
                 :if={interview.prep_notes}
-                class="mt-2 whitespace-pre-line text-sm text-zinc-700"
+                class="mt-2 whitespace-pre-line rounded bg-amber-50 p-2 text-sm text-zinc-700"
               >
                 {interview.prep_notes}
               </p>
