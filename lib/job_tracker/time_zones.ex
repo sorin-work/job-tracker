@@ -31,4 +31,14 @@ defmodule JobTracker.TimeZones do
       {:error, _} -> datetime
     end
   end
+
+  @doc """
+  Interprets a wall-clock time in the given zone and returns it in UTC.
+  """
+  def from_local(%NaiveDateTime{} = naive, zone) do
+    naive
+    |> DateTime.from_naive!(zone)
+    |> DateTime.shift_zone!("Etc/UTC")
+    |> DateTime.truncate(:second)
+  end
 end
