@@ -42,6 +42,7 @@ defmodule JobTrackerWeb.InterviewLive.Index do
             </p>
           </div>
         </div>
+        <p :if={interview.location} class="mt-1 text-sm text-zinc-500">{interview.location}</p>
         <p
           :if={interview.prep_notes}
           class="mt-2 line-clamp-3 whitespace-pre-line text-sm text-zinc-700"
