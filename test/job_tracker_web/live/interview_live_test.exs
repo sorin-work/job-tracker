@@ -25,4 +25,9 @@ defmodule JobTrackerWeb.InterviewLiveTest do
     assert has_element?(lv, "#upcoming-#{upcoming.id}")
     assert has_element?(lv, "#past-#{past.id}", "Phone screen")
   end
+
+  test "shows empty states", %{conn: conn} do
+    {:ok, _lv, html} = live(conn, ~p"/interviews")
+    assert html =~ "No interviews scheduled."
+  end
 end
