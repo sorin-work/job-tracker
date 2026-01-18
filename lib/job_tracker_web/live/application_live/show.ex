@@ -49,6 +49,10 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   defp apply_action(socket, :edit_interview, %{"interview_id" => interview_id}) do
     interview = Interviews.get_interview!(socket.assigns.current_user, interview_id)
 
+    if interview.job_application_id != socket.assigns.application.id do
+      raise Ecto.NoResultsError, queryable: Interview
+    end
+
     socket
     |> assign(:page_title, "Edit interview")
     |> assign(:interview, interview)
