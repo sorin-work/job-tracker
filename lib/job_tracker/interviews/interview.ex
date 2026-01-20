@@ -64,7 +64,7 @@ defmodule JobTracker.Interviews.Interview do
     ])
     |> trim_fields([:location, :interviewers, :prep_notes, :feedback])
     |> validate_required([:local_scheduled_at, :duration_minutes, :kind, :outcome])
-    |> validate_number(:duration_minutes, greater_than: 0)
+    |> validate_number(:duration_minutes, greater_than: 0, less_than_or_equal_to: 600)
     |> validate_length(:location, max: 500)
     |> validate_length(:interviewers, max: 255)
     |> put_scheduled_at(time_zone)
