@@ -21,6 +21,17 @@ defmodule JobTracker.InterviewsTest do
                errors_on(changeset)
     end
 
+    test "validates the duration", %{user: user, application: application} do
+      assert {:error, changeset} =
+               Interviews.create_interview(user, application, %{
+                 local_scheduled_at: "2026-03-10T14:30",
+                 kind: "technical",
+                 duration_minutes: 0
+               })
+
+      assert %{duration_minutes: [_]} = errors_on(changeset)
+    end
+
     test "refuses another user's application", %{user: user} do
       other = application_fixture(user_fixture())
 
