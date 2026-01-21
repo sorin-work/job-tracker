@@ -6,6 +6,7 @@ defmodule JobTracker.InterviewsTest do
   import JobTracker.PipelineFixtures
 
   alias JobTracker.Interviews
+  alias JobTracker.Interviews.Interview
 
   setup do
     user = user_fixture()
@@ -79,5 +80,21 @@ defmodule JobTracker.InterviewsTest do
       interview_fixture(other_user, application_fixture(other_user))
       assert Interviews.list_upcoming(user) == []
     end
+  end
+
+  test "get_interview!/2 is scoped to the user", %{user: user} do
+    other_user = user_fixture()
+    interview = interview_fixture(other_user, application_fixture(other_user))
+    assert_raise Ecto.NoResultsError, fn -> Interviews.get_interview!(user, interview.id) end
+  end
+
+  test "delete_interview/1", %{user: user, application: application} do
+    interview = interview_fixture(user, application)
+    assert {:ok, %Interview{}} = Interviews.delete_interview(interview)
+    assert Interviews.list_upcoming(user) == []
+  end
+
+  test "kind_label/1" do
+    assert Interview.kind_label(:phone_screen) == "Phone screen"
   end
 end
