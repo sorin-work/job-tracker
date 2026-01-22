@@ -56,7 +56,7 @@ defmodule JobTracker.Interviews do
       [i],
       fragment("? + make_interval(mins => ?)", i.scheduled_at, i.duration_minutes) < ^now
     )
-    |> order_by([i], asc: i.scheduled_at)
+    |> order_by([i], desc: i.scheduled_at)
     |> limit(^limit)
     |> Repo.all()
     |> Repo.preload(job_application: :company)
