@@ -12,6 +12,7 @@ defmodule JobTracker.Pipeline do
   alias JobTracker.Accounts.User
   alias JobTracker.Companies
   alias JobTracker.Pipeline.{JobApplication, Status, StatusChange, Tag}
+  alias JobTracker.Reminders.Reminder
   alias JobTracker.Repo
 
   @per_page 25
@@ -215,7 +216,8 @@ defmodule JobTracker.Pipeline do
       :company,
       :tags,
       :status_changes,
-      :interviews
+      :interviews,
+      reminders: from(r in Reminder, order_by: [asc: is_nil(r.completed_at), asc: r.due_on])
     ])
   end
 

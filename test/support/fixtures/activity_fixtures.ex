@@ -29,4 +29,14 @@ defmodule JobTracker.ActivityFixtures do
 
     interview
   end
+
+  def reminder_fixture(user, attrs \\ %{}) do
+    {:ok, reminder} =
+      JobTracker.Reminders.create_reminder(
+        user,
+        Enum.into(attrs, %{title: "Follow up", due_on: Date.utc_today()})
+      )
+
+    reminder
+  end
 end

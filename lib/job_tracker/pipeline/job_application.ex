@@ -39,6 +39,7 @@ defmodule JobTracker.Pipeline.JobApplication do
       preload_order: [desc: :changed_at, desc: :id]
 
     has_many :interviews, JobTracker.Interviews.Interview, preload_order: [asc: :scheduled_at]
+    has_many :reminders, JobTracker.Reminders.Reminder, preload_order: [asc: :due_on]
 
     many_to_many :tags, JobTracker.Pipeline.Tag,
       join_through: "job_application_tags",
