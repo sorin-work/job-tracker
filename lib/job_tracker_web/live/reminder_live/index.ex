@@ -176,12 +176,14 @@ defmodule JobTrackerWeb.ReminderLive.Index do
       title="Overdue"
       reminders={@groups.overdue}
       today={@today}
+      tone="text-red-600"
     />
     <.reminder_group
       id="today"
       title="Due today"
       reminders={@groups.today}
       today={@today}
+      tone="text-amber-700"
     />
     <.reminder_group id="upcoming" title="Upcoming" reminders={@groups.upcoming} today={@today} />
     <.reminder_group
