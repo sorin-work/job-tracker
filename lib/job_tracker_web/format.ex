@@ -29,6 +29,20 @@ defmodule JobTrackerWeb.Format do
   end
 
   @doc """
+  How far a due date is from today: "today", "tomorrow", "in 3 days",
+  "yesterday", "4 days overdue".
+  """
+  def due(%Date{} = due_on, %Date{} = today) do
+    case Date.diff(due_on, today) do
+      0 -> "today"
+      1 -> "tomorrow"
+      -1 -> "yesterday"
+      days when days > 1 -> "in #{days} days"
+      days -> "#{-days} days overdue"
+    end
+  end
+
+  @doc """
   A salary range in a compact form: "$120k – $140k", "from €60k", "up to £80k".
   """
   def salary(nil, nil, _currency), do: nil

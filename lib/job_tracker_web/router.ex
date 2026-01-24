@@ -76,6 +76,8 @@ defmodule JobTrackerWeb.Router do
            ApplicationLive.Show,
            :edit_interview
 
+      live "/applications/:id/reminders/new", ApplicationLive.Show, :new_reminder
+
       live "/interviews", InterviewLive.Index, :index
 
       live "/companies", CompanyLive.Index, :index

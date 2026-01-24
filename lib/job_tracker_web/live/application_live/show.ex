@@ -6,6 +6,8 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   alias JobTracker.Interviews.Interview
   alias JobTracker.Pipeline
   alias JobTracker.Pipeline.Status
+  alias JobTracker.Reminders
+  alias JobTracker.Reminders.Reminder
 
   @impl true
   def mount(_params, _session, socket) do
@@ -30,6 +32,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     |> assign(:timeline, Pipeline.timeline(application))
     |> assign(:contacts, Contacts.list_contacts(user, company_id: application.company_id))
     |> assign(:status_form, to_form(%{"status" => application.status, "note" => ""}, as: :status))
+    |> assign(:today, JobTracker.TimeZones.today(user))
   end
 
   defp apply_action(socket, :show, _params) do
@@ -58,6 +61,12 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     |> assign(:interview, interview)
   end
 
+  defp apply_action(socket, :new_reminder, _params) do
+    socket
+    |> assign(:page_title, "New reminder")
+    |> assign(:reminder, %Reminder{job_application_id: socket.assigns.application.id})
+  end
+
   @impl true
   def handle_event("change_status", %{"status" => %{"status" => status} = params}, socket) do
     %{current_user: user, application: application} = socket.assigns
@@ -72,6 +81,17 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Could not change the status")}
     end
+  end
+
+  def handle_event("complete_reminder", %{"id" => id}, socket) do
+    reminder = Reminders.get_reminder!(socket.assigns.current_user, id)
+
+    {:ok, _} =
+      if Reminder.completed?(reminder),
+        do: Reminders.reopen_reminder(reminder),
+        else: Reminders.complete_reminder(reminder)
+
+    {:noreply, reload(socket)}
   end
 
   def handle_event("delete_interview", %{"id" => id}, socket) do
@@ -301,6 +321,47 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
           </.form>
         </.panel>
 
+        <.panel id="reminders" title="Reminders">
+          <:actions>
+            <.link
+              patch={~p"/applications/#{@application}/reminders/new"}
+              class="font-medium text-brand"
+            >
+              Add
+            </.link>
+          </:actions>
+          <.empty_state :if={@application.reminders == []}>No reminders.</.empty_state>
+          <ul class="space-y-2">
+            <li
+              :for={reminder <- @application.reminders}
+              id={"reminder-#{reminder.id}"}
+              class="flex items-start gap-2 text-sm"
+            >
+              <input
+                type="checkbox"
+                checked={Reminder.completed?(reminder)}
+                phx-click="complete_reminder"
+                phx-value-id={reminder.id}
+                class="mt-0.5 rounded border-zinc-300 text-zinc-900 focus:ring-0"
+                aria-label={"Mark #{reminder.title} as done"}
+              />
+              <div>
+                <p class={[Reminder.completed?(reminder) && "text-zinc-400 line-through"]}>
+                  {reminder.title}
+                </p>
+                <p class={[
+                  "text-xs",
+                  !Reminder.completed?(reminder) && Date.compare(reminder.due_on, @today) == :lt &&
+                    "text-red-600",
+                  "text-zinc-500"
+                ]}>
+                  {Format.short_date(reminder.due_on)} · {Format.due(reminder.due_on, @today)}
+                </p>
+              </div>
+            </li>
+          </ul>
+        </.panel>
+
         <.panel title={"People at #{@application.company.name}"}>
           <:actions>
             <.link
@@ -367,6 +428,22 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
         action={@live_action}
         interview={@interview}
         application={@application}
+        current_user={@current_user}
+        patch={~p"/applications/#{@application}"}
+      />
+    </.modal>
+
+    <.modal
+      :if={@live_action == :new_reminder}
+      id="reminder-modal"
+      show
+      on_cancel={JS.patch(~p"/applications/#{@application}")}
+    >
+      <.live_component
+        module={JobTrackerWeb.ReminderLive.FormComponent}
+        id={:new}
+        title="New reminder"
+        reminder={@reminder}
         current_user={@current_user}
         patch={~p"/applications/#{@application}"}
       />

@@ -167,6 +167,24 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       lv |> element("#interview-#{interview.id} a", "Remove") |> render_click()
       refute has_element?(lv, "#interview-#{interview.id}")
     end
+
+    test "adds reminders and follow-ups", %{conn: conn, application: application} do
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}/reminders/new")
+
+      lv
+      |> form("#reminder-form", reminder: %{title: "Ask for feedback", due_on: Date.utc_today()})
+      |> render_submit()
+
+      assert lv |> element("#reminders") |> render() =~ "Ask for feedback"
+    end
+
+    test "completes a reminder", %{conn: conn, user: user, application: application} do
+      reminder = reminder_fixture(user, job_application_id: application.id)
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}")
+
+      lv |> element("#reminder-#{reminder.id} input") |> render_click()
+      assert JobTracker.Reminders.get_reminder!(user, reminder.id).completed_at
+    end
   end
 
   defp application_user(application), do: JobTracker.Accounts.get_user!(application.user_id)

@@ -13,6 +13,15 @@ defmodule JobTrackerWeb.FormatTest do
     assert Format.salary(nil, nil, "USD") == nil
   end
 
+  test "due/2 describes how far away a date is" do
+    today = ~D[2026-03-10]
+    assert Format.due(today, today) == "today"
+    assert Format.due(~D[2026-03-11], today) == "tomorrow"
+    assert Format.due(~D[2026-03-09], today) == "yesterday"
+    assert Format.due(~D[2026-03-15], today) == "in 5 days"
+    assert Format.due(~D[2026-03-06], today) == "4 days overdue"
+  end
+
   test "label/1" do
     assert Format.label(:company_site) == "Company site"
     assert Format.label(nil) == "—"
