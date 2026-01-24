@@ -80,6 +80,10 @@ defmodule JobTrackerWeb.Router do
 
       live "/interviews", InterviewLive.Index, :index
 
+      live "/reminders", ReminderLive.Index, :index
+      live "/reminders/new", ReminderLive.Index, :new
+      live "/reminders/:id/edit", ReminderLive.Index, :edit
+
       live "/companies", CompanyLive.Index, :index
       live "/companies/new", CompanyLive.Index, :new
       live "/companies/:id/edit", CompanyLive.Index, :edit
