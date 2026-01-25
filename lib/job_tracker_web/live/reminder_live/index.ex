@@ -121,6 +121,9 @@ defmodule JobTrackerWeb.ReminderLive.Index do
                 · {reminder.job_application.title} at {reminder.job_application.company.name}
               </.link>
             </p>
+            <p :if={reminder.notes} class="mt-1 whitespace-pre-line text-sm text-zinc-600">
+              {reminder.notes}
+            </p>
           </div>
           <div class="flex shrink-0 items-center gap-3 text-xs font-medium">
             <button
