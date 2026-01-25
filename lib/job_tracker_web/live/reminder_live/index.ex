@@ -4,6 +4,7 @@ defmodule JobTrackerWeb.ReminderLive.Index do
   alias JobTracker.Reminders
   alias JobTracker.Reminders.Reminder
   alias JobTracker.TimeZones
+  alias JobTrackerWeb.Nav
 
   @impl true
   def mount(_params, _session, socket) do
@@ -16,6 +17,7 @@ defmodule JobTrackerWeb.ReminderLive.Index do
     socket
     |> assign(:today, TimeZones.today(user))
     |> assign(:groups, Reminders.grouped(user))
+    |> Nav.assign_due_count()
   end
 
   @impl true

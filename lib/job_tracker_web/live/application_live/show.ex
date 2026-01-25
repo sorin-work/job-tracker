@@ -8,6 +8,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
   alias JobTracker.Pipeline.Status
   alias JobTracker.Reminders
   alias JobTracker.Reminders.Reminder
+  alias JobTrackerWeb.Nav
 
   @impl true
   def mount(_params, _session, socket) do
@@ -118,7 +119,9 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     application =
       Pipeline.get_application!(socket.assigns.current_user, socket.assigns.application.id)
 
-    assign_application(socket, application)
+    socket
+    |> assign_application(application)
+    |> Nav.assign_due_count()
   end
 
   defp blank_to_nil(nil), do: nil
