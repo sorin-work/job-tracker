@@ -176,6 +176,9 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       |> render_submit()
 
       assert lv |> element("#reminders") |> render() =~ "Ask for feedback"
+
+      lv |> element("#reminders button", "7 days") |> render_click()
+      assert lv |> element("#reminders") |> render() =~ "Follow up with"
     end
 
     test "completes a reminder", %{conn: conn, user: user, application: application} do

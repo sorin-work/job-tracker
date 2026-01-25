@@ -95,6 +95,26 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
     {:noreply, reload(socket)}
   end
 
+  def handle_event("follow_up", %{"days" => days}, socket) do
+    %{current_user: user, application: application} = socket.assigns
+    days = String.to_integer(days)
+
+    {:ok, _} =
+      Reminders.create_reminder(user, %{
+        title: "Follow up with #{application.company.name}",
+        due_on: Date.add(socket.assigns.today, days),
+        job_application_id: application.id
+      })
+
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       "Follow-up added for #{Format.short_date(Date.add(socket.assigns.today, days))}"
+     )
+     |> reload()}
+  end
+
   def handle_event("delete_interview", %{"id" => id}, socket) do
     interview = Interviews.get_interview!(socket.assigns.current_user, id)
     {:ok, _} = Interviews.delete_interview(interview)
@@ -333,6 +353,18 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
               Add
             </.link>
           </:actions>
+          <div class="mb-3 flex flex-wrap gap-2 text-xs">
+            <span class="text-zinc-500">Follow up in</span>
+            <button
+              :for={days <- [3, 7, 14]}
+              type="button"
+              phx-click="follow_up"
+              phx-value-days={days}
+              class="rounded-full border border-zinc-200 px-2 py-0.5 font-medium text-zinc-700 hover:bg-zinc-50"
+            >
+              {days} days
+            </button>
+          </div>
           <.empty_state :if={@application.reminders == []}>No reminders.</.empty_state>
           <ul class="space-y-2">
             <li
