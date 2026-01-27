@@ -49,6 +49,19 @@ defmodule JobTracker.RemindersTest do
       reminder = reminder_fixture(user, job_application_id: application.id)
       assert reminder.job_application_id == application.id
     end
+
+    test "can't be attached to another user's application", %{user: user} do
+      application = application_fixture(user_fixture())
+
+      assert {:error, changeset} =
+               Reminders.create_reminder(user, %{
+                 title: "x",
+                 due_on: days(1),
+                 job_application_id: application.id
+               })
+
+      assert %{job_application_id: ["is not valid"]} = errors_on(changeset)
+    end
   end
 
   test "update_reminder/3 and delete_reminder/1", %{user: user} do

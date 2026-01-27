@@ -8,6 +8,7 @@ defmodule JobTracker.Reminders do
   import Ecto.Query, warn: false
 
   alias JobTracker.Accounts.User
+  alias JobTracker.Pipeline.JobApplication
   alias JobTracker.Reminders.Reminder
   alias JobTracker.Repo
 
@@ -75,13 +76,30 @@ defmodule JobTracker.Reminders do
   def create_reminder(%User{} = user, attrs) do
     %Reminder{user_id: user.id}
     |> Reminder.changeset(attrs)
+    |> validate_application_owner(user)
     |> Repo.insert()
   end
 
-  def update_reminder(%User{} = _user, %Reminder{} = reminder, attrs) do
+  def update_reminder(%User{} = user, %Reminder{} = reminder, attrs) do
     reminder
     |> Reminder.changeset(attrs)
+    |> validate_application_owner(user)
     |> Repo.update()
+  end
+
+  # The application id comes from a form, so make sure it is one of the user's.
+  defp validate_application_owner(changeset, user) do
+    case Ecto.Changeset.get_change(changeset, :job_application_id) do
+      nil ->
+        changeset
+
+      id ->
+        if Repo.exists?(from a in JobApplication, where: a.id == ^id and a.user_id == ^user.id) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :job_application_id, "is not valid")
+        end
+    end
   end
 
   def complete_reminder(%Reminder{} = reminder) do
