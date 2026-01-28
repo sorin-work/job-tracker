@@ -30,14 +30,12 @@ defmodule JobTrackerWeb.ReminderLiveTest do
     assert lv |> form("#reminder-form", reminder: %{title: ""}) |> render_change() =~
              "can&#39;t be blank"
 
+    lv |> element("#reminder-form button", "In a week") |> render_click()
+
     html =
       lv
       |> form("#reminder-form",
-        reminder: %{
-          title: "Check in",
-          due_on: Date.add(Date.utc_today(), 7),
-          job_application_id: application.id
-        }
+        reminder: %{title: "Check in", job_application_id: application.id}
       )
       |> render_submit()
 

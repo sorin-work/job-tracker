@@ -37,6 +37,26 @@ defmodule JobTrackerWeb.ReminderLive.FormComponent do
             options={@application_options}
           />
         </div>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="text-zinc-500">Quick pick:</span>
+          <button
+            :for={
+              {label, days} <- [
+                {"Tomorrow", 1},
+                {"In 3 days", 3},
+                {"In a week", 7},
+                {"In two weeks", 14}
+              ]
+            }
+            type="button"
+            phx-click="quick_date"
+            phx-value-days={days}
+            phx-target={@myself}
+            class="rounded-full border border-zinc-200 px-2 py-0.5 font-medium text-zinc-700 hover:bg-zinc-50"
+          >
+            {label}
+          </button>
+        </div>
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <:actions>
           <.button phx-disable-with="Saving...">Save reminder</.button>
@@ -66,6 +86,15 @@ defmodule JobTrackerWeb.ReminderLive.FormComponent do
   def handle_event("validate", %{"reminder" => params}, socket) do
     changeset = Reminders.change_reminder(socket.assigns.reminder, params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("quick_date", %{"days" => days}, socket) do
+    due_on =
+      Date.add(JobTracker.TimeZones.today(socket.assigns.current_user), String.to_integer(days))
+
+    params = Map.put(socket.assigns.form.params, "due_on", Date.to_iso8601(due_on))
+    changeset = Reminders.change_reminder(socket.assigns.reminder, params)
+    {:noreply, assign(socket, form: to_form(changeset))}
   end
 
   def handle_event("save", %{"reminder" => params}, socket) do
