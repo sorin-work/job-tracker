@@ -45,4 +45,22 @@ defmodule JobTrackerWeb.ReminderLiveTest do
     assert due_on == Date.add(Date.utc_today(), 7)
     assert app_id == application.id
   end
+
+  test "completes, snoozes, edits and deletes reminders", %{conn: conn, user: user} do
+    reminder = reminder_fixture(user, title: "Email recruiter")
+    {:ok, lv, _html} = live(conn, ~p"/reminders")
+
+    lv |> element("#reminder-#{reminder.id} button", "Snooze a day") |> render_click()
+    assert has_element?(lv, "#upcoming #reminder-#{reminder.id}")
+
+    lv |> element("#reminder-#{reminder.id} input") |> render_click()
+    assert has_element?(lv, "#completed #reminder-#{reminder.id}")
+
+    {:ok, lv, _html} = live(conn, ~p"/reminders/#{reminder}/edit")
+    lv |> form("#reminder-form", reminder: %{title: "Email the recruiter"}) |> render_submit()
+    assert render(lv) =~ "Email the recruiter"
+
+    lv |> element("#reminder-#{reminder.id} button", "Delete") |> render_click()
+    refute has_element?(lv, "#reminder-#{reminder.id}")
+  end
 end
