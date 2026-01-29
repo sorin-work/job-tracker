@@ -6,6 +6,7 @@ defmodule JobTracker.RemindersTest do
   import JobTracker.PipelineFixtures
 
   alias JobTracker.Reminders
+  alias JobTracker.Reminders.Reminder
 
   setup do
     %{user: user_fixture()}
@@ -62,6 +63,14 @@ defmodule JobTracker.RemindersTest do
 
       assert %{job_application_id: ["is not valid"]} = errors_on(changeset)
     end
+  end
+
+  test "complete_reminder/1 and reopen_reminder/1", %{user: user} do
+    reminder = reminder_fixture(user)
+    assert {:ok, reminder} = Reminders.complete_reminder(reminder)
+    assert Reminder.completed?(reminder)
+    assert {:ok, reminder} = Reminders.reopen_reminder(reminder)
+    refute Reminder.completed?(reminder)
   end
 
   test "snooze_reminder/3 moves the due date from today", %{user: user} do
