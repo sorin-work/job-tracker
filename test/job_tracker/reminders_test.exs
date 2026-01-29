@@ -64,11 +64,24 @@ defmodule JobTracker.RemindersTest do
     end
   end
 
+  test "snooze_reminder/3 moves the due date from today", %{user: user} do
+    reminder = reminder_fixture(user, due_on: days(-5))
+    assert {:ok, reminder} = Reminders.snooze_reminder(user, reminder, 2)
+    assert reminder.due_on == days(2)
+  end
+
   test "update_reminder/3 and delete_reminder/1", %{user: user} do
     reminder = reminder_fixture(user)
     assert {:ok, reminder} = Reminders.update_reminder(user, reminder, %{title: "Call back"})
     assert reminder.title == "Call back"
     assert {:ok, _} = Reminders.delete_reminder(reminder)
     assert Reminders.list_due(user) == []
+  end
+
+  test "deleting an application deletes its reminders", %{user: user} do
+    application = application_fixture(user)
+    reminder_fixture(user, job_application_id: application.id)
+    {:ok, _} = JobTracker.Pipeline.delete_application(application)
+    assert Reminders.count_due(user) == 0
   end
 end
