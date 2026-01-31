@@ -4,6 +4,7 @@ defmodule JobTrackerWeb.DashboardLive do
   alias JobTracker.Interviews
   alias JobTracker.Interviews.Interview
   alias JobTracker.Pipeline
+  alias JobTracker.Pipeline.Status
   alias JobTracker.Reminders
   alias JobTracker.TimeZones
 
@@ -44,6 +45,8 @@ defmodule JobTrackerWeb.DashboardLive do
     {:noreply, load(socket)}
   end
 
+  defp open_total(counts), do: counts |> Map.take(Status.open()) |> Map.values() |> Enum.sum()
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -55,6 +58,12 @@ defmodule JobTrackerWeb.DashboardLive do
         </.link>
       </:actions>
     </.header>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <.stat_card id="stat-open" title="Open applications" value={open_total(@counts)} />
+      <.stat_card id="stat-interviewing" title="Interviewing" value={@counts.interviewing} />
+      <.stat_card id="stat-offers" title="Offers" value={@counts.offer} />
+    </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
       <.panel id="due-reminders" title="Due today and overdue">
