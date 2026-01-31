@@ -92,6 +92,21 @@ defmodule JobTrackerWeb.AppComponents do
   def priority_label(_), do: "medium"
 
   attr :title, :string, required: true
+  attr :value, :any, required: true
+  attr :hint, :string, default: nil
+  attr :id, :string, default: nil
+
+  def stat_card(assigns) do
+    ~H"""
+    <div id={@id} class="rounded-lg border border-zinc-200 bg-white p-4">
+      <p class="text-sm text-zinc-500">{@title}</p>
+      <p class="mt-1 text-2xl font-semibold text-zinc-900">{@value}</p>
+      <p :if={@hint} class="mt-1 text-xs text-zinc-500">{@hint}</p>
+    </div>
+    """
+  end
+
+  attr :title, :string, required: true
   attr :class, :string, default: nil
   attr :rest, :global
   slot :inner_block, required: true

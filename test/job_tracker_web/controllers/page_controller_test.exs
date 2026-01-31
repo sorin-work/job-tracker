@@ -10,8 +10,8 @@ defmodule JobTrackerWeb.PageControllerTest do
     assert html =~ ~p"/users/register"
   end
 
-  test "GET / sends logged in users to their applications", %{conn: conn} do
+  test "GET / sends logged in users to the dashboard", %{conn: conn} do
     conn = conn |> log_in_user(user_fixture()) |> get(~p"/")
-    assert redirected_to(conn) == ~p"/applications"
+    assert redirected_to(conn) == ~p"/dashboard"
   end
 end

@@ -1,7 +1,7 @@
 <header class="border-b border-zinc-200 bg-white">
   <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
     <.link
-      navigate={if @current_user, do: ~p"/applications", else: ~p"/"}
+      navigate={if @current_user, do: ~p"/dashboard", else: ~p"/"}
       class="flex items-center gap-2 font-semibold text-zinc-900"
     >
       <.icon name="hero-briefcase" class="h-6 w-6 text-brand" /> Job Tracker

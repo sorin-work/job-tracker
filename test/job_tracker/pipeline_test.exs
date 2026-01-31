@@ -281,6 +281,15 @@ defmodule JobTracker.PipelineTest do
     end
   end
 
+  test "count_by_status/1 includes every status", %{user: user} do
+    application_fixture(user, status: :applied)
+    application_fixture(user, status: :applied)
+
+    counts = Pipeline.count_by_status(user)
+    assert counts.applied == 2
+    assert counts.offer == 0
+  end
+
   test "get_application!/2 is scoped to the user", %{user: user} do
     application = application_fixture(user_fixture())
     assert_raise Ecto.NoResultsError, fn -> Pipeline.get_application!(user, application.id) end

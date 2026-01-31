@@ -3,7 +3,7 @@ defmodule JobTrackerWeb.PageController do
 
   def home(conn, _params) do
     if conn.assigns[:current_user] do
-      redirect(conn, to: ~p"/applications")
+      redirect(conn, to: ~p"/dashboard")
     else
       render(conn, :home, page_title: "Keep your job search on track")
     end

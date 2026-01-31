@@ -204,6 +204,22 @@ defmodule JobTracker.Pipeline do
     Map.new(Status.all(), &{&1, Map.get(grouped, &1, [])})
   end
 
+  @doc """
+  Number of applications in each status, including statuses with none.
+  """
+  def count_by_status(%User{} = user) do
+    counts =
+      Repo.all(
+        from a in JobApplication,
+          where: a.user_id == ^user.id,
+          group_by: a.status,
+          select: {a.status, count(a.id)}
+      )
+      |> Map.new()
+
+    Map.new(Status.all(), &{&1, Map.get(counts, &1, 0)})
+  end
+
   ## Single applications
 
   @doc """

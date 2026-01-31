@@ -14,6 +14,7 @@ defmodule JobTrackerWeb.Layouts do
 
   def nav_items do
     [
+      {"Dashboard", ~p"/dashboard", :dashboard},
       {"Board", ~p"/board", :board},
       {"Applications", ~p"/applications", :applications},
       {"Interviews", ~p"/interviews", :interviews},
