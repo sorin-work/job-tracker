@@ -22,4 +22,19 @@ defmodule JobTrackerWeb.DashboardLiveTest do
     assert lv |> element("#upcoming-interviews") |> render() =~ "System design"
     assert lv |> element("#nav-due-count") |> render() =~ "1"
   end
+
+  test "completes and snoozes reminders", %{conn: conn, user: user} do
+    done = reminder_fixture(user, title: "Email recruiter")
+    snoozed = reminder_fixture(user, title: "Update resume")
+
+    {:ok, lv, _html} = live(conn, ~p"/dashboard")
+
+    assert lv |> element("#due-#{done.id} button", "Done") |> render_click() =~
+             "Done: Email recruiter"
+
+    refute has_element?(lv, "#due-#{done.id}")
+
+    lv |> element("#due-#{snoozed.id} button", "Tomorrow") |> render_click()
+    refute has_element?(lv, "#due-#{snoozed.id}")
+  end
 end
