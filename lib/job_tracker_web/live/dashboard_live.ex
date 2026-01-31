@@ -52,6 +52,7 @@ defmodule JobTrackerWeb.DashboardLive do
     ~H"""
     <.header>
       Dashboard
+      <:subtitle>{Calendar.strftime(@today, "%A, %B %-d")}</:subtitle>
       <:actions>
         <.link navigate={~p"/applications/new"}>
           <.button>New application</.button>
