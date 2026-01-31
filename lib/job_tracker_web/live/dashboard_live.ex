@@ -142,6 +142,24 @@ defmodule JobTrackerWeb.DashboardLive do
         </ul>
       </.panel>
     </div>
+
+    <.panel title="Pipeline" class="mt-6">
+      <:actions>
+        <.link navigate={~p"/board"} class="font-medium text-zinc-600 hover:text-zinc-900">
+          Open board
+        </.link>
+      </:actions>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+        <.link
+          :for={status <- Status.all()}
+          navigate={~p"/applications?status=#{status}"}
+          class="rounded-md border border-zinc-100 p-3 text-center hover:bg-zinc-50"
+        >
+          <p class="text-xl font-semibold text-zinc-900">{@counts[status]}</p>
+          <.status_badge status={status} class="mt-1" />
+        </.link>
+      </div>
+    </.panel>
     """
   end
 end
