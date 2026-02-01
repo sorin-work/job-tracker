@@ -7,6 +7,10 @@ defmodule JobTrackerWeb.DashboardLiveTest do
 
   setup :register_and_log_in_user
 
+  test "redirects visitors to the login page" do
+    assert {:error, {:redirect, %{to: "/users/log_in"}}} = live(build_conn(), ~p"/dashboard")
+  end
+
   test "shows pipeline counts, due reminders and upcoming interviews", %{conn: conn, user: user} do
     application = application_fixture(user, title: "Platform Engineer", status: :interviewing)
     interview_fixture(user, application, %{kind: :system_design})
