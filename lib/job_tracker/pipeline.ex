@@ -551,18 +551,23 @@ defmodule JobTracker.Pipeline do
   defp upsert_tags(user, changeset) do
     names = changeset |> Ecto.Changeset.get_field(:tag_names) |> Tag.parse_names()
 
-    existing = Repo.all(from t in Tag, where: t.user_id == ^user.id and t.name in ^names)
-    existing_names = MapSet.new(existing, & &1.name)
+    if Enum.any?(names, &(String.length(&1) > 30)) do
+      {:error,
+       Ecto.Changeset.add_error(changeset, :tag_names, "tags can be at most 30 characters")}
+    else
+      existing = Repo.all(from t in Tag, where: t.user_id == ^user.id and t.name in ^names)
+      existing_names = MapSet.new(existing, & &1.name)
 
-    created =
-      for name <- names, name not in existing_names do
-        Repo.insert!(%Tag{user_id: user.id, name: name},
-          on_conflict: {:replace, [:updated_at]},
-          conflict_target: {:unsafe_fragment, "(user_id, lower(name))"}
-        )
-      end
+      created =
+        for name <- names, name not in existing_names do
+          Repo.insert!(%Tag{user_id: user.id, name: name},
+            on_conflict: {:replace, [:updated_at]},
+            conflict_target: {:unsafe_fragment, "(user_id, lower(name))"}
+          )
+        end
 
-    by_name = Map.new(existing ++ created, &{&1.name, &1})
-    {:ok, Enum.map(names, &Map.fetch!(by_name, &1))}
+      by_name = Map.new(existing ++ created, &{&1.name, &1})
+      {:ok, Enum.map(names, &Map.fetch!(by_name, &1))}
+    end
   end
 end

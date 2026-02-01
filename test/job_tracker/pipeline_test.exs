@@ -340,5 +340,18 @@ defmodule JobTracker.PipelineTest do
       assert {:ok, _} = Pipeline.delete_tag(tag)
       assert Pipeline.get_application!(user, application.id).tags == []
     end
+
+    test "rejects tag names that are too long", %{user: user} do
+      company = company_fixture(user)
+
+      assert {:error, changeset} =
+               Pipeline.create_application(user, %{
+                 title: "Engineer",
+                 company_id: company.id,
+                 tag_names: String.duplicate("x", 31)
+               })
+
+      assert %{tag_names: [_]} = errors_on(changeset)
+    end
   end
 end
