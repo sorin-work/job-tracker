@@ -37,7 +37,7 @@
   </div>
   <nav
     :if={@current_user}
-    class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+    class="mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8"
     aria-label="Main"
   >
     <ul class="-mb-px flex gap-1 text-sm">
@@ -45,7 +45,7 @@
         <.link
           navigate={path}
           class={[
-            "flex items-center gap-1.5 border-b-2 px-3 py-2 font-medium",
+            "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 font-medium",
             if(assigns[:active_nav] == key,
               do: "border-brand text-zinc-900",
               else: "border-transparent text-zinc-500 hover:text-zinc-800"
