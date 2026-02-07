@@ -14,6 +14,7 @@ defmodule JobTracker.Pipeline do
   alias JobTracker.Pipeline.{JobApplication, Status, StatusChange, Tag}
   alias JobTracker.Reminders.Reminder
   alias JobTracker.Repo
+  alias JobTracker.TimeZones
 
   @per_page 25
   @sortable ~w(updated applied company title status salary priority)
@@ -441,11 +442,11 @@ defmodule JobTracker.Pipeline do
   end
 
   # The application date is filled in the first time it moves past the wishlist.
-  defp maybe_set_applied_on(changeset, _user, status) do
+  defp maybe_set_applied_on(changeset, user, status) do
     rank = Status.rank(status)
 
     if rank && rank >= 1 && is_nil(Ecto.Changeset.get_field(changeset, :applied_on)) do
-      Ecto.Changeset.put_change(changeset, :applied_on, Date.utc_today())
+      Ecto.Changeset.put_change(changeset, :applied_on, TimeZones.today(user))
     else
       changeset
     end

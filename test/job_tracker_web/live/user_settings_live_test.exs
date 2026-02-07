@@ -25,6 +25,28 @@ defmodule JobTrackerWeb.UserSettingsLiveTest do
     end
   end
 
+  describe "preferences form" do
+    setup %{conn: conn} do
+      user = user_fixture()
+      %{conn: log_in_user(conn, user), user: user}
+    end
+
+    test "saves the time zone, weekly goal and follow-up days", %{conn: conn, user: user} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      html =
+        lv
+        |> form("#preferences_form",
+          user: %{time_zone: "Europe/Lisbon", weekly_goal: "6", follow_up_days: "5"}
+        )
+        |> render_submit()
+
+      assert html =~ "Preferences saved."
+      user = Accounts.get_user!(user.id)
+      assert {user.time_zone, user.weekly_goal, user.follow_up_days} == {"Europe/Lisbon", 6, 5}
+    end
+  end
+
   describe "update email form" do
     setup %{conn: conn} do
       password = valid_user_password()

@@ -1,6 +1,7 @@
 defmodule JobTrackerWeb.FormatTest do
   use ExUnit.Case, async: true
 
+  alias JobTracker.Accounts.User
   alias JobTrackerWeb.Format
 
   test "salary/3 formats ranges compactly" do
@@ -20,6 +21,11 @@ defmodule JobTrackerWeb.FormatTest do
     assert Format.due(~D[2026-03-09], today) == "yesterday"
     assert Format.due(~D[2026-03-15], today) == "in 5 days"
     assert Format.due(~D[2026-03-06], today) == "4 days overdue"
+  end
+
+  test "datetime/2 uses the user's time zone" do
+    user = %User{time_zone: "America/Chicago"}
+    assert Format.datetime(~U[2026-03-03 20:30:00Z], user) == "Tue, Mar 3 · 2:30 PM"
   end
 
   test "label/1" do

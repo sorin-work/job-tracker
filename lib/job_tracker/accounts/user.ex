@@ -12,6 +12,9 @@ defmodule JobTracker.Accounts.User do
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
+    field :time_zone, :string, default: "Etc/UTC"
+    field :weekly_goal, :integer
+    field :follow_up_days, :integer
 
     timestamps(type: :utc_datetime)
   end
@@ -161,5 +164,16 @@ defmodule JobTracker.Accounts.User do
     else
       add_error(changeset, :current_password, "is not valid")
     end
+  end
+
+  @doc """
+  A user changeset for the preferences shown on the settings page.
+  """
+  def preferences_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:time_zone, :weekly_goal, :follow_up_days])
+    |> validate_required([:time_zone])
+    |> validate_number(:weekly_goal, greater_than: 0, less_than_or_equal_to: 100)
+    |> validate_number(:follow_up_days, greater_than: 0, less_than_or_equal_to: 60)
   end
 end

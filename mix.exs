@@ -59,6 +59,7 @@ defmodule JobTracker.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
+      {:tzdata, "~> 1.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

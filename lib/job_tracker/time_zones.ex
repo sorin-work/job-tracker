@@ -6,6 +6,48 @@ defmodule JobTracker.TimeZones do
   times or what counts as "today" for reminders, goes through these functions.
   """
 
+  alias JobTracker.Accounts.User
+
+  @common ~w(
+    Etc/UTC
+    America/Los_Angeles
+    America/Denver
+    America/Chicago
+    America/New_York
+    America/Toronto
+    America/Sao_Paulo
+    Europe/London
+    Europe/Dublin
+    Europe/Lisbon
+    Europe/Madrid
+    Europe/Paris
+    Europe/Berlin
+    Europe/Amsterdam
+    Europe/Warsaw
+    Europe/Bucharest
+    Europe/Athens
+    Europe/Kyiv
+    Asia/Dubai
+    Asia/Kolkata
+    Asia/Singapore
+    Asia/Tokyo
+    Australia/Sydney
+    Pacific/Auckland
+  )
+
+  @doc """
+  Time zones offered in the settings form, the common ones first.
+  """
+  def options do
+    common = Enum.map(@common, &{label(&1), &1})
+    rest = for zone <- Tzdata.zone_list(), zone not in @common, do: {label(zone), zone}
+    common ++ [[key: "──────────", value: "", disabled: true] | rest]
+  end
+
+  defp label("Etc/UTC"), do: "UTC"
+  defp label(zone), do: String.replace(zone, "_", " ")
+
+  def zone(%User{time_zone: zone}) when is_binary(zone), do: zone
   def zone(_), do: "Etc/UTC"
 
   @doc """

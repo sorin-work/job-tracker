@@ -5,12 +5,44 @@ defmodule JobTrackerWeb.UserSettingsLive do
 
   def render(assigns) do
     ~H"""
-    <.header class="text-center">
-      Account Settings
-      <:subtitle>Manage your account email address and password settings</:subtitle>
+    <.header>
+      Settings
+      <:subtitle>Your preferences, email address and password</:subtitle>
     </.header>
 
-    <div class="space-y-12 divide-y">
+    <div class="max-w-xl space-y-12 divide-y">
+      <div>
+        <.simple_form
+          for={@preferences_form}
+          id="preferences_form"
+          phx-submit="update_preferences"
+          phx-change="validate_preferences"
+        >
+          <.input
+            field={@preferences_form[:time_zone]}
+            type="select"
+            label="Time zone"
+            options={JobTracker.TimeZones.options()}
+          />
+          <.input
+            field={@preferences_form[:weekly_goal]}
+            type="number"
+            label="Weekly goal (applications per week)"
+            min="1"
+            placeholder="No goal"
+          />
+          <.input
+            field={@preferences_form[:follow_up_days]}
+            type="number"
+            label="Remind me to follow up after applying (days)"
+            min="1"
+            placeholder="Don't add follow-ups"
+          />
+          <:actions>
+            <.button phx-disable-with="Saving...">Save preferences</.button>
+          </:actions>
+        </.simple_form>
+      </div>
       <div>
         <.simple_form
           for={@email_form}
@@ -98,9 +130,33 @@ defmodule JobTrackerWeb.UserSettingsLive do
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(:preferences_form, to_form(Accounts.change_user_preferences(user)))
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
+  end
+
+  def handle_event("validate_preferences", %{"user" => params}, socket) do
+    form =
+      socket.assigns.current_user
+      |> Accounts.change_user_preferences(params)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, :preferences_form, form)}
+  end
+
+  def handle_event("update_preferences", %{"user" => params}, socket) do
+    case Accounts.update_user_preferences(socket.assigns.current_user, params) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:current_user, user)
+         |> assign(:preferences_form, to_form(Accounts.change_user_preferences(user)))
+         |> put_flash(:info, "Preferences saved.")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :preferences_form, to_form(changeset))}
+    end
   end
 
   def handle_event("validate_email", params, socket) do

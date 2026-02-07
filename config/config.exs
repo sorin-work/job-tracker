@@ -58,6 +58,10 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# Interview times are stored in UTC and shown in each user's time zone.
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+config :tzdata, :autoupdate, :disabled
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

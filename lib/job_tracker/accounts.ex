@@ -350,4 +350,22 @@ defmodule JobTracker.Accounts do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
+  ## Preferences
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the user's preferences.
+  """
+  def change_user_preferences(%User{} = user, attrs \\ %{}) do
+    User.preferences_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the time zone, weekly goal and follow-up preferences.
+  """
+  def update_user_preferences(%User{} = user, attrs) do
+    user
+    |> User.preferences_changeset(attrs)
+    |> Repo.update()
+  end
 end

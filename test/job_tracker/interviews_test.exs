@@ -5,6 +5,7 @@ defmodule JobTracker.InterviewsTest do
   import JobTracker.ActivityFixtures
   import JobTracker.PipelineFixtures
 
+  alias JobTracker.Accounts
   alias JobTracker.Interviews
   alias JobTracker.Interviews.Interview
 
@@ -14,6 +15,23 @@ defmodule JobTracker.InterviewsTest do
   end
 
   describe "create_interview/3" do
+    test "stores the time in UTC from the user's time zone", %{
+      user: user,
+      application: application
+    } do
+      {:ok, user} = Accounts.update_user_preferences(user, %{time_zone: "America/New_York"})
+
+      assert {:ok, interview} =
+               Interviews.create_interview(user, application, %{
+                 local_scheduled_at: "2026-03-10T14:30",
+                 kind: "technical",
+                 duration_minutes: 60
+               })
+
+      # New York is on daylight saving time (UTC-4) from March 8, 2026.
+      assert interview.scheduled_at == ~U[2026-03-10 18:30:00Z]
+    end
+
     test "requires a time and a type", %{user: user, application: application} do
       assert {:error, changeset} = Interviews.create_interview(user, application, %{})
 
@@ -42,6 +60,20 @@ defmodule JobTracker.InterviewsTest do
         })
       end
     end
+  end
+
+  test "change_interview/3 shows the stored time in the user's zone", %{
+    user: user,
+    application: application
+  } do
+    {:ok, user} = Accounts.update_user_preferences(user, %{time_zone: "Europe/Berlin"})
+
+    interview =
+      interview_fixture(user, application, %{local_scheduled_at: ~N[2026-01-15 09:00:00]})
+
+    assert interview.scheduled_at == ~U[2026-01-15 08:00:00Z]
+    changeset = Interviews.change_interview(user, interview)
+    assert Ecto.Changeset.get_field(changeset, :local_scheduled_at) == ~N[2026-01-15 09:00:00]
   end
 
   test "update_interview/3 keeps the time unless it changes", %{
