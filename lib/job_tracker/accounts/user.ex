@@ -173,6 +173,7 @@ defmodule JobTracker.Accounts.User do
     user
     |> cast(attrs, [:time_zone, :weekly_goal, :follow_up_days])
     |> validate_required([:time_zone])
+    |> validate_inclusion(:time_zone, Tzdata.zone_list(), message: "is not a known time zone")
     |> validate_number(:weekly_goal, greater_than: 0, less_than_or_equal_to: 100)
     |> validate_number(:follow_up_days, greater_than: 0, less_than_or_equal_to: 60)
   end
