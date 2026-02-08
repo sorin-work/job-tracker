@@ -256,7 +256,8 @@ defmodule JobTracker.Pipeline do
   Creates an application and records its first status in the history.
 
   The company can be given as `company_id` or as a `company_name`, which is
-  looked up (case-insensitively) or created.
+  looked up (case-insensitively) or created. If the application starts out as
+  applied and the user has a follow-up preference, a reminder is added too.
   """
   def create_application(%User{} = user, attrs) do
     now = DateTime.utc_now(:second)
@@ -286,6 +287,9 @@ defmodule JobTracker.Pipeline do
         to_status: application.status,
         changed_at: now
       }
+    end)
+    |> Multi.run(:follow_up, fn _repo, %{application: application} ->
+      maybe_schedule_follow_up(user, application, nil)
     end)
     |> Repo.transaction()
     |> case do
@@ -416,7 +420,7 @@ defmodule JobTracker.Pipeline do
     Repo.delete(application)
   end
 
-  defp record_status_change(multi, _user, previous, note \\ nil) do
+  defp record_status_change(multi, user, previous, note \\ nil) do
     multi
     |> Multi.run(:status_change, fn repo, %{application: application} ->
       if application.status == previous.status do
@@ -430,6 +434,9 @@ defmodule JobTracker.Pipeline do
           changed_at: DateTime.utc_now(:second)
         })
       end
+    end)
+    |> Multi.run(:follow_up, fn _repo, %{application: application} ->
+      maybe_schedule_follow_up(user, application, previous.status)
     end)
   end
 
@@ -451,6 +458,24 @@ defmodule JobTracker.Pipeline do
       changeset
     end
   end
+
+  defp maybe_schedule_follow_up(%User{follow_up_days: days} = user, application, _previous_status)
+       when is_integer(days) and days > 0 do
+    if application.status == :applied do
+      application = Repo.preload(application, :company)
+
+      %Reminder{user_id: user.id, job_application_id: application.id}
+      |> Reminder.changeset(%{
+        title: "Follow up with #{application.company.name}",
+        due_on: Date.add(TimeZones.today(user), days)
+      })
+      |> Repo.insert()
+    else
+      {:ok, nil}
+    end
+  end
+
+  defp maybe_schedule_follow_up(_user, _application, _previous_status), do: {:ok, nil}
 
   defp resolve_company(user, changeset) do
     case Ecto.Changeset.get_change(changeset, :company_name) do

@@ -5,8 +5,10 @@ defmodule JobTracker.PipelineTest do
   import JobTracker.CompaniesFixtures
   import JobTracker.PipelineFixtures
 
+  alias JobTracker.Accounts
   alias JobTracker.Pipeline
   alias JobTracker.Pipeline.{JobApplication, StatusChange}
+  alias JobTracker.Reminders.Reminder
 
   setup do
     %{user: user_fixture()}
@@ -94,6 +96,25 @@ defmodule JobTracker.PipelineTest do
       assert length(Pipeline.list_tags(user)) == 2
     end
 
+    test "adds a follow-up reminder when the user has a follow-up preference", %{user: user} do
+      {:ok, user} = Accounts.update_user_preferences(user, %{follow_up_days: 5})
+      application = application_fixture(user, status: :applied)
+
+      assert [%Reminder{} = reminder] =
+               Repo.all(from r in Reminder, where: r.job_application_id == ^application.id)
+
+      assert reminder.due_on == Date.add(Date.utc_today(), 5)
+      assert reminder.title =~ "Follow up with"
+    end
+
+    test "adds no follow-up without the preference or for the wishlist", %{user: user} do
+      application_fixture(user, status: :applied)
+      {:ok, user} = Accounts.update_user_preferences(user, %{follow_up_days: 5})
+      application_fixture(user, status: :wishlist)
+
+      assert Repo.aggregate(Reminder, :count) == 0
+    end
+
     test "puts new applications at the end of their column", %{user: user} do
       first = application_fixture(user)
       second = application_fixture(user)
@@ -160,6 +181,14 @@ defmodule JobTracker.PipelineTest do
       application = application_fixture(user)
       assert {:ok, _} = Pipeline.change_status(user, application, "wishlist")
       assert history(application) == [{nil, :wishlist}]
+    end
+
+    test "adds a follow-up when moving to applied", %{user: user} do
+      {:ok, user} = Accounts.update_user_preferences(user, %{follow_up_days: 7})
+      application = application_fixture(user)
+
+      {:ok, _} = Pipeline.change_status(user, application, :applied)
+      assert Repo.aggregate(Reminder, :count) == 1
     end
   end
 
