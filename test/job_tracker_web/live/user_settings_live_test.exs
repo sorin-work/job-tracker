@@ -45,6 +45,17 @@ defmodule JobTrackerWeb.UserSettingsLiveTest do
       user = Accounts.get_user!(user.id)
       assert {user.time_zone, user.weekly_goal, user.follow_up_days} == {"Europe/Lisbon", 6, 5}
     end
+
+    test "validates the values", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      html =
+        lv
+        |> form("#preferences_form", user: %{weekly_goal: "0"})
+        |> render_change()
+
+      assert html =~ "must be greater than 0"
+    end
   end
 
   describe "update email form" do
