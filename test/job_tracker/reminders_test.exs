@@ -5,8 +5,10 @@ defmodule JobTracker.RemindersTest do
   import JobTracker.ActivityFixtures
   import JobTracker.PipelineFixtures
 
+  alias JobTracker.Accounts
   alias JobTracker.Reminders
   alias JobTracker.Reminders.Reminder
+  alias JobTracker.TimeZones
 
   setup do
     %{user: user_fixture()}
@@ -24,6 +26,16 @@ defmodule JobTracker.RemindersTest do
 
     assert Enum.map(Reminders.list_due(user), & &1.id) == [overdue.id, today.id]
     assert Reminders.count_due(user) == 2
+  end
+
+  test "due dates follow the user's time zone", %{user: user} do
+    # UTC+14 and UTC-11 are 25 hours apart, so their dates always differ.
+    {:ok, user} = Accounts.update_user_preferences(user, %{time_zone: "Pacific/Kiritimati"})
+    reminder_fixture(user, due_on: TimeZones.today(user))
+    assert Reminders.count_due(user) == 1
+
+    {:ok, user} = Accounts.update_user_preferences(user, %{time_zone: "Pacific/Pago_Pago"})
+    assert Reminders.count_due(user) == 0
   end
 
   test "grouped/1 splits reminders into overdue, today, upcoming and completed", %{user: user} do

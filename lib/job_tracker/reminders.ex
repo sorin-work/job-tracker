@@ -11,12 +11,13 @@ defmodule JobTracker.Reminders do
   alias JobTracker.Pipeline.JobApplication
   alias JobTracker.Reminders.Reminder
   alias JobTracker.Repo
+  alias JobTracker.TimeZones
 
   @doc """
   Open reminders that are due today or earlier, oldest first.
   """
   def list_due(%User{} = user) do
-    today = Date.utc_today()
+    today = TimeZones.today(user)
 
     Reminder
     |> where([r], r.user_id == ^user.id and is_nil(r.completed_at))
@@ -30,7 +31,7 @@ defmodule JobTracker.Reminders do
   Number of open reminders due today or earlier, for the navigation badge.
   """
   def count_due(%User{} = user) do
-    today = Date.utc_today()
+    today = TimeZones.today(user)
 
     Reminder
     |> where([r], r.user_id == ^user.id and is_nil(r.completed_at))
@@ -43,7 +44,7 @@ defmodule JobTracker.Reminders do
   and the 20 most recently `:completed`.
   """
   def grouped(%User{} = user) do
-    today = Date.utc_today()
+    today = TimeZones.today(user)
 
     open =
       Reminder
@@ -117,9 +118,9 @@ defmodule JobTracker.Reminders do
   @doc """
   Moves a reminder's due date `days` days past today.
   """
-  def snooze_reminder(%User{} = _user, %Reminder{} = reminder, days) when days > 0 do
+  def snooze_reminder(%User{} = user, %Reminder{} = reminder, days) when days > 0 do
     reminder
-    |> Ecto.Changeset.change(due_on: Date.add(Date.utc_today(), days))
+    |> Ecto.Changeset.change(due_on: Date.add(TimeZones.today(user), days))
     |> Repo.update()
   end
 
