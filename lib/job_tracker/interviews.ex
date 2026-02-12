@@ -31,7 +31,10 @@ defmodule JobTracker.Interviews do
     user
     |> user_query()
     |> where([i], i.outcome != :cancelled)
-    |> where([i], i.scheduled_at >= ^now)
+    |> where(
+      [i],
+      fragment("? + make_interval(mins => ?)", i.scheduled_at, i.duration_minutes) >= ^now
+    )
     |> maybe_within(opts[:within_days], now)
     |> order_by([i], asc: i.scheduled_at)
     |> Repo.all()

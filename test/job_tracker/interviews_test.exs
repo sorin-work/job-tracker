@@ -113,6 +113,19 @@ defmodule JobTracker.InterviewsTest do
       assert Enum.map(Interviews.list_past(user), & &1.id) == [past.id]
     end
 
+    test "an interview in progress is still upcoming", %{user: user, application: application} do
+      started =
+        NaiveDateTime.utc_now()
+        |> NaiveDateTime.add(-10, :minute)
+        |> NaiveDateTime.truncate(:second)
+
+      interview =
+        interview_fixture(user, application, %{local_scheduled_at: started, duration_minutes: 60})
+
+      assert [%{id: id}] = Interviews.list_upcoming(user)
+      assert id == interview.id
+    end
+
     test "cancelled interviews are not upcoming", %{user: user, application: application} do
       interview_fixture(user, application, %{outcome: :cancelled})
       assert Interviews.list_upcoming(user) == []
