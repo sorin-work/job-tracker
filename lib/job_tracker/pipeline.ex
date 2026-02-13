@@ -459,9 +459,9 @@ defmodule JobTracker.Pipeline do
     end
   end
 
-  defp maybe_schedule_follow_up(%User{follow_up_days: days} = user, application, _previous_status)
+  defp maybe_schedule_follow_up(%User{follow_up_days: days} = user, application, previous_status)
        when is_integer(days) and days > 0 do
-    if application.status == :applied do
+    if application.status == :applied and previous_status != :applied do
       application = Repo.preload(application, :company)
 
       %Reminder{user_id: user.id, job_application_id: application.id}

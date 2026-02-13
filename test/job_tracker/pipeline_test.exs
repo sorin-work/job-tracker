@@ -190,6 +190,15 @@ defmodule JobTracker.PipelineTest do
       {:ok, _} = Pipeline.change_status(user, application, :applied)
       assert Repo.aggregate(Reminder, :count) == 1
     end
+
+    test "editing an applied application doesn't add another follow-up", %{user: user} do
+      {:ok, user} = Accounts.update_user_preferences(user, %{follow_up_days: 7})
+      application = application_fixture(user, status: :applied)
+
+      {:ok, application} = Pipeline.update_application(user, application, %{notes: "Called"})
+      {:ok, _} = Pipeline.update_application(user, application, %{title: "Renamed"})
+      assert Repo.aggregate(Reminder, :count) == 1
+    end
   end
 
   describe "move_application/4" do
