@@ -40,5 +40,6 @@ defmodule JobTrackerWeb.DashboardLiveTest do
 
     lv |> element("#due-#{snoozed.id} button", "Tomorrow") |> render_click()
     refute has_element?(lv, "#due-#{snoozed.id}")
+    refute has_element?(lv, "#nav-due-count")
   end
 end

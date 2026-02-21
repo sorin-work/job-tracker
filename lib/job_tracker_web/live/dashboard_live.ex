@@ -7,6 +7,7 @@ defmodule JobTrackerWeb.DashboardLive do
   alias JobTracker.Pipeline.Status
   alias JobTracker.Reminders
   alias JobTracker.TimeZones
+  alias JobTrackerWeb.Nav
 
   @impl true
   def mount(_params, _session, socket) do
@@ -34,7 +35,8 @@ defmodule JobTrackerWeb.DashboardLive do
     {:noreply,
      socket
      |> put_flash(:info, "Done: #{reminder.title}")
-     |> load()}
+     |> load()
+     |> Nav.assign_due_count()}
   end
 
   def handle_event("snooze", %{"id" => id}, socket) do
@@ -42,7 +44,10 @@ defmodule JobTrackerWeb.DashboardLive do
     reminder = Reminders.get_reminder!(user, id)
     {:ok, _} = Reminders.snooze_reminder(user, reminder, 1)
 
-    {:noreply, load(socket)}
+    {:noreply,
+     socket
+     |> load()
+     |> Nav.assign_due_count()}
   end
 
   defp open_total(counts), do: counts |> Map.take(Status.open()) |> Map.values() |> Enum.sum()
