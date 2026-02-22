@@ -18,4 +18,12 @@ defmodule JobTracker.TimeZonesTest do
     assert local.hour == 8
     assert local.day == 2
   end
+
+  test "today/1 falls back to UTC for users without a zone" do
+    assert TimeZones.today(%User{time_zone: nil}) == Date.utc_today()
+  end
+
+  test "options/0 starts with the common zones" do
+    assert [{"UTC", "Etc/UTC"} | _] = TimeZones.options()
+  end
 end
