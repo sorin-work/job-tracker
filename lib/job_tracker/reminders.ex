@@ -19,8 +19,8 @@ defmodule JobTracker.Reminders do
   def list_due(%User{} = user) do
     today = TimeZones.today(user)
 
-    Reminder
-    |> where([r], r.user_id == ^user.id and is_nil(r.completed_at))
+    user
+    |> open_query()
     |> where([r], r.due_on <= ^today)
     |> order_by([r], asc: r.due_on, asc: r.id)
     |> Repo.all()
@@ -33,8 +33,8 @@ defmodule JobTracker.Reminders do
   def count_due(%User{} = user) do
     today = TimeZones.today(user)
 
-    Reminder
-    |> where([r], r.user_id == ^user.id and is_nil(r.completed_at))
+    user
+    |> open_query()
     |> where([r], r.due_on <= ^today)
     |> Repo.aggregate(:count)
   end
@@ -47,8 +47,8 @@ defmodule JobTracker.Reminders do
     today = TimeZones.today(user)
 
     open =
-      Reminder
-      |> where([r], r.user_id == ^user.id and is_nil(r.completed_at))
+      user
+      |> open_query()
       |> order_by([r], asc: r.due_on, asc: r.id)
       |> Repo.all()
       |> Repo.preload(job_application: :company)
@@ -66,6 +66,10 @@ defmodule JobTracker.Reminders do
       upcoming: Enum.filter(open, &(Date.compare(&1.due_on, today) == :gt)),
       completed: completed
     }
+  end
+
+  defp open_query(user) do
+    where(Reminder, [r], r.user_id == ^user.id and is_nil(r.completed_at))
   end
 
   def get_reminder!(%User{} = user, id) do
