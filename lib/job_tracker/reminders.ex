@@ -57,6 +57,7 @@ defmodule JobTracker.Reminders do
       Reminder
       |> where([r], r.user_id == ^user.id and not is_nil(r.completed_at))
       |> order_by([r], desc: r.completed_at)
+      |> limit(20)
       |> Repo.all()
       |> Repo.preload(job_application: :company)
 
