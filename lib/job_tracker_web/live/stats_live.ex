@@ -14,6 +14,11 @@ defmodule JobTrackerWeb.StatsLive do
     {:noreply, assign(socket, :summary, Stats.summary(socket.assigns.current_user))}
   end
 
+  defp bar_width(_count, 0), do: 0
+  defp bar_width(count, max), do: round(count * 100 / max)
+
+  defp max_weekly(weekly), do: weekly |> Enum.map(& &1.count) |> Enum.max(fn -> 0 end)
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -66,6 +71,22 @@ defmodule JobTrackerWeb.StatsLive do
             </div>
           </li>
         </ul>
+      </.panel>
+
+      <.panel id="weekly" title="Applications per week">
+        <div class="flex h-40 items-end gap-1" role="img" aria-label="Applications submitted per week">
+          <div
+            :for={week <- @summary.weekly}
+            class="group flex flex-1 flex-col items-center justify-end gap-1"
+            title={"Week of #{Format.short_date(week.week)}: #{week.count}"}
+          >
+            <span class="text-[10px] text-zinc-500">{if week.count > 0, do: week.count}</span>
+            <div
+              class="w-full rounded-t bg-sky-400 group-hover:bg-sky-500"
+              style={"height: #{bar_width(week.count, max_weekly(@summary.weekly))}%; min-height: #{if week.count > 0, do: 2, else: 0}px"}
+            />
+          </div>
+        </div>
       </.panel>
     </div>
     """
