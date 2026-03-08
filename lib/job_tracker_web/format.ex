@@ -83,6 +83,12 @@ defmodule JobTrackerWeb.Format do
       else: Float.to_string(rounded)
   end
 
+  def percent(nil), do: "—"
+
+  def percent(value) when is_float(value) do
+    if value == Float.round(value), do: "#{trunc(value)}%", else: "#{value}%"
+  end
+
   def label(nil), do: "—"
   def label(value) when is_atom(value), do: value |> Atom.to_string() |> label()
 

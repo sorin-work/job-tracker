@@ -20,7 +20,8 @@ defmodule JobTrackerWeb.Layouts do
       {"Interviews", ~p"/interviews", :interviews},
       {"Reminders", ~p"/reminders", :reminders},
       {"Companies", ~p"/companies", :companies},
-      {"Contacts", ~p"/contacts", :contacts}
+      {"Contacts", ~p"/contacts", :contacts},
+      {"Stats", ~p"/stats", :stats}
     ]
   end
 end

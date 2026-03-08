@@ -97,6 +97,8 @@ defmodule JobTrackerWeb.Router do
 
       live "/tags", TagLive.Index, :index
       live "/tags/:id/edit", TagLive.Index, :edit
+
+      live "/stats", StatsLive, :index
     end
   end
 
