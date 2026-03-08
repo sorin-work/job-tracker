@@ -18,6 +18,7 @@ defmodule JobTrackerWeb.StatsLiveTest do
     assert lv |> element("#stat-response-rate") |> render() =~ "50%"
     assert lv |> element("#funnel-applied") |> render() =~ "2"
     assert lv |> element("#funnel-screening") |> render() =~ "50% of previous"
+    assert lv |> element("#sources") |> render() =~ "Referral"
     assert has_element?(lv, "#weekly")
   end
 end

@@ -70,4 +70,29 @@ defmodule JobTracker.Stats.CalculationsTest do
       assert Calculations.response_rate([history([:wishlist])]) == nil
     end
   end
+
+  test "by_source/1 sorts by count and computes response rates" do
+    histories = [
+      history([:applied, :screening], source: :referral),
+      history([:applied], source: :linkedin),
+      history([:applied, :rejected], source: :linkedin),
+      history([:applied], source: :linkedin),
+      history([:wishlist], source: :referral)
+    ]
+
+    assert Calculations.by_source(histories) == [
+             %{source: :linkedin, count: 3, response_rate: 33.3},
+             %{source: :referral, count: 1, response_rate: 100.0}
+           ]
+  end
+
+  test "outcomes/1 counts closed statuses" do
+    histories = [
+      history([:applied, :rejected]),
+      history([:applied, :rejected]),
+      history([:applied])
+    ]
+
+    assert Calculations.outcomes(histories) == %{accepted: 0, rejected: 2, withdrawn: 0}
+  end
 end

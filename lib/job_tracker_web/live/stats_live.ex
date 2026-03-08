@@ -88,6 +88,37 @@ defmodule JobTrackerWeb.StatsLive do
           </div>
         </div>
       </.panel>
+
+      <.panel id="sources" title="By source">
+        <.empty_state :if={@summary.by_source == []}>No submitted applications yet.</.empty_state>
+        <table :if={@summary.by_source != []} class="w-full text-sm">
+          <thead class="text-left text-xs text-zinc-500">
+            <tr>
+              <th class="pb-2 font-medium">Source</th>
+              <th class="pb-2 text-right font-medium">Applications</th>
+              <th class="pb-2 text-right font-medium">Response rate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-100">
+            <tr :for={row <- @summary.by_source}>
+              <td class="py-1.5">
+                {if row.source, do: Format.label(row.source), else: "Not specified"}
+              </td>
+              <td class="py-1.5 text-right">{row.count}</td>
+              <td class="py-1.5 text-right">{Format.percent(row.response_rate)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </.panel>
+
+      <.panel id="outcomes" title="Outcomes">
+        <dl class="grid grid-cols-3 gap-4 text-center">
+          <div :for={status <- Status.closed()}>
+            <dt><.status_badge status={status} /></dt>
+            <dd class="mt-2 text-2xl font-semibold text-zinc-900">{@summary.outcomes[status]}</dd>
+          </div>
+        </dl>
+      </.panel>
     </div>
     """
   end

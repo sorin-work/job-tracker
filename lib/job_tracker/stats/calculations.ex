@@ -117,6 +117,28 @@ defmodule JobTracker.Stats.Calculations do
     end
   end
 
+  @doc """
+  Response rate per source, for sources with at least one submitted
+  application, ordered by the number of applications.
+  """
+  def by_source(histories) do
+    histories
+    |> Enum.filter(&submitted?/1)
+    |> Enum.group_by(& &1.source)
+    |> Enum.map(fn {source, group} ->
+      %{source: source, count: length(group), response_rate: response_rate(group)}
+    end)
+    |> Enum.sort_by(&{-&1.count, to_string(&1.source)})
+  end
+
+  @doc """
+  How closed applications ended.
+  """
+  def outcomes(histories) do
+    counts = Enum.frequencies_by(histories, & &1.status)
+    Map.new(Status.closed(), &{&1, Map.get(counts, &1, 0)})
+  end
+
   def percent(_part, 0), do: nil
   def percent(part, whole), do: Float.round(part * 100 / whole, 1)
 end

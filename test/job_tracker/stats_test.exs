@@ -29,5 +29,6 @@ defmodule JobTracker.StatsTest do
     assert [%{status: :applied, count: 3}, %{status: :screening, count: 1} | _] = summary.funnel
     assert length(summary.weekly) == 12
     assert List.last(summary.weekly).count == 3
+    assert summary.outcomes.rejected == 1
   end
 end

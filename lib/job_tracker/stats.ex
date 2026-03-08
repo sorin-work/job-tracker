@@ -33,7 +33,9 @@ defmodule JobTracker.Stats do
           Enum.map(histories, & &1.applied_on),
           today,
           opts[:weeks] || 12
-        )
+        ),
+      by_source: Calculations.by_source(histories),
+      outcomes: Calculations.outcomes(histories)
     }
   end
 
