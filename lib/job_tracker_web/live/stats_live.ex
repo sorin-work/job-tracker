@@ -33,11 +33,13 @@ defmodule JobTrackerWeb.StatsLive do
         id="stat-submitted"
         title="Submitted"
         value={@summary.submitted}
+        hint="Moved past the wishlist"
       />
       <.stat_card
         id="stat-response-rate"
         title="Response rate"
         value={Format.percent(@summary.response_rate)}
+        hint="Got a reply, a screen or a rejection"
       />
       <.stat_card
         id="stat-response-time"
@@ -47,6 +49,7 @@ defmodule JobTrackerWeb.StatsLive do
             do: "#{@summary.average_days_to_response} days",
             else: "—"
         }
+        hint="Average from applying"
       />
     </div>
 
