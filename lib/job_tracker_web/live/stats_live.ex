@@ -90,6 +90,11 @@ defmodule JobTrackerWeb.StatsLive do
             />
           </div>
         </div>
+        <div class="mt-1 flex gap-1 text-[10px] text-zinc-400">
+          <span :for={week <- @summary.weekly} class="flex-1 truncate text-center">
+            {Calendar.strftime(week.week, "%-m/%-d")}
+          </span>
+        </div>
       </.panel>
 
       <.panel id="sources" title="By source">
