@@ -80,7 +80,7 @@ defmodule JobTrackerWeb.StatsLive do
         <div class="flex h-40 items-end gap-1" role="img" aria-label="Applications submitted per week">
           <div
             :for={week <- @summary.weekly}
-            class="group flex flex-1 flex-col items-center justify-end gap-1"
+            class="group flex h-full flex-1 flex-col items-center justify-end gap-1"
             title={"Week of #{Format.short_date(week.week)}: #{week.count}"}
           >
             <span class="text-[10px] text-zinc-500">{if week.count > 0, do: week.count}</span>
