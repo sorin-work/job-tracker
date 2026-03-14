@@ -5,6 +5,8 @@ defmodule JobTrackerWeb.DashboardLiveTest do
   import JobTracker.ActivityFixtures
   import JobTracker.PipelineFixtures
 
+  alias JobTracker.Accounts
+
   setup :register_and_log_in_user
 
   test "redirects visitors to the login page" do
@@ -41,5 +43,13 @@ defmodule JobTrackerWeb.DashboardLiveTest do
     lv |> element("#due-#{snoozed.id} button", "Tomorrow") |> render_click()
     refute has_element?(lv, "#due-#{snoozed.id}")
     refute has_element?(lv, "#nav-due-count")
+  end
+
+  test "shows progress towards the weekly goal", %{conn: conn, user: user} do
+    {:ok, _} = Accounts.update_user_preferences(user, %{weekly_goal: 4})
+    application_fixture(user, status: :applied)
+
+    {:ok, lv, _html} = live(conn, ~p"/dashboard")
+    assert lv |> element("#weekly-goal") |> render() =~ "/ 4"
   end
 end

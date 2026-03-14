@@ -6,6 +6,7 @@ defmodule JobTrackerWeb.DashboardLive do
   alias JobTracker.Pipeline
   alias JobTracker.Pipeline.Status
   alias JobTracker.Reminders
+  alias JobTracker.Stats
   alias JobTracker.TimeZones
   alias JobTrackerWeb.Nav
 
@@ -25,6 +26,7 @@ defmodule JobTrackerWeb.DashboardLive do
     |> assign(:counts, Pipeline.count_by_status(user))
     |> assign(:due, Reminders.list_due(user))
     |> assign(:upcoming, Interviews.list_upcoming(user, within_days: 7))
+    |> assign(:goal, Stats.weekly_goal_progress(user))
   end
 
   @impl true
@@ -52,6 +54,9 @@ defmodule JobTrackerWeb.DashboardLive do
 
   defp open_total(counts), do: counts |> Map.take(Status.open()) |> Map.values() |> Enum.sum()
 
+  defp goal_percent(%{goal: nil}), do: 0
+  defp goal_percent(%{count: count, goal: goal}), do: min(round(count * 100 / goal), 100)
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -69,6 +74,18 @@ defmodule JobTrackerWeb.DashboardLive do
       <.stat_card id="stat-open" title="Open applications" value={open_total(@counts)} />
       <.stat_card id="stat-interviewing" title="Interviewing" value={@counts.interviewing} />
       <.stat_card id="stat-offers" title="Offers" value={@counts.offer} />
+      <div id="weekly-goal" class="rounded-lg border border-zinc-200 bg-white p-4">
+        <p class="text-sm text-zinc-500">Applied this week</p>
+        <p class="mt-1 text-2xl font-semibold text-zinc-900">
+          {@goal.count}<span :if={@goal.goal} class="text-base font-normal text-zinc-500"> / {@goal.goal}</span>
+        </p>
+        <div :if={@goal.goal} class="mt-2 h-1.5 rounded-full bg-zinc-100">
+          <div class="h-1.5 rounded-full bg-brand" style={"width: #{goal_percent(@goal)}%"} />
+        </div>
+        <.link :if={!@goal.goal} navigate={~p"/users/settings"} class="mt-1 block text-xs text-brand">
+          Set a weekly goal
+        </.link>
+      </div>
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">

@@ -83,4 +83,9 @@ defmodule JobTracker.TimeZones do
     |> DateTime.shift_zone!("Etc/UTC")
     |> DateTime.truncate(:second)
   end
+
+  @doc """
+  Monday of the week the date falls in.
+  """
+  def week_start(%Date{} = date), do: Date.beginning_of_week(date, :monday)
 end

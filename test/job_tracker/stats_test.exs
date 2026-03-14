@@ -4,6 +4,7 @@ defmodule JobTracker.StatsTest do
   import JobTracker.AccountsFixtures
   import JobTracker.PipelineFixtures
 
+  alias JobTracker.Accounts
   alias JobTracker.Pipeline
   alias JobTracker.Stats
 
@@ -30,5 +31,13 @@ defmodule JobTracker.StatsTest do
     assert length(summary.weekly) == 12
     assert List.last(summary.weekly).count == 3
     assert summary.outcomes.rejected == 1
+  end
+
+  test "weekly_goal_progress/1 counts applications since monday", %{user: user} do
+    {:ok, user} = Accounts.update_user_preferences(user, %{weekly_goal: 5})
+    application_fixture(user, status: :applied)
+    application_fixture(user, status: :applied, applied_on: Date.add(Date.utc_today(), -8))
+
+    assert %{count: 1, goal: 5} = Stats.weekly_goal_progress(user)
   end
 end

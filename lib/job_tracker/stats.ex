@@ -39,6 +39,22 @@ defmodule JobTracker.Stats do
     }
   end
 
+  @doc """
+  Applications submitted this week (Monday to today) against the user's
+  weekly goal.
+  """
+  def weekly_goal_progress(%User{} = user) do
+    week_start = user |> TimeZones.today() |> TimeZones.week_start()
+
+    count =
+      Repo.aggregate(
+        from(a in JobApplication, where: a.user_id == ^user.id and a.applied_on >= ^week_start),
+        :count
+      )
+
+    %{count: count, goal: user.weekly_goal}
+  end
+
   defp histories(user) do
     applications =
       Repo.all(

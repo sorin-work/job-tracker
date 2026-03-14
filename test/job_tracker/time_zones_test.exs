@@ -23,6 +23,11 @@ defmodule JobTracker.TimeZonesTest do
     assert TimeZones.today(%User{time_zone: nil}) == Date.utc_today()
   end
 
+  test "week_start/1 is monday" do
+    assert TimeZones.week_start(~D[2026-03-15]) == ~D[2026-03-09]
+    assert TimeZones.week_start(~D[2026-03-09]) == ~D[2026-03-09]
+  end
+
   test "options/0 starts with the common zones" do
     assert [{"UTC", "Etc/UTC"} | _] = TimeZones.options()
   end
