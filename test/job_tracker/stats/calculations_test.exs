@@ -71,6 +71,18 @@ defmodule JobTracker.Stats.CalculationsTest do
     end
   end
 
+  describe "weekly_counts/3" do
+    test "groups by monday-based weeks and fills empty weeks" do
+      dates = [~D[2026-03-02], ~D[2026-03-08], ~D[2026-03-09], nil, ~D[2026-01-05]]
+
+      assert Calculations.weekly_counts(dates, ~D[2026-03-11], 3) == [
+               %{week: ~D[2026-02-23], count: 0},
+               %{week: ~D[2026-03-02], count: 2},
+               %{week: ~D[2026-03-09], count: 1}
+             ]
+    end
+  end
+
   test "by_source/1 sorts by count and computes response rates" do
     histories = [
       history([:applied, :screening], source: :referral),
