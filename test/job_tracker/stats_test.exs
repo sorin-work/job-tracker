@@ -33,6 +33,19 @@ defmodule JobTracker.StatsTest do
     assert summary.outcomes.rejected == 1
   end
 
+  test "summary/2 can be limited to recent applications", %{user: user} do
+    old = application_fixture(user, status: :applied)
+    long_ago = DateTime.add(DateTime.utc_now(:second), -100, :day)
+
+    Repo.update_all(from(a in Pipeline.JobApplication, where: a.id == ^old.id),
+      set: [inserted_at: long_ago]
+    )
+
+    application_fixture(user, status: :applied)
+
+    assert Stats.summary(user, since: Date.add(Date.utc_today(), -30)).total == 1
+  end
+
   test "weekly_goal_progress/1 counts applications since monday", %{user: user} do
     {:ok, user} = Accounts.update_user_preferences(user, %{weekly_goal: 5})
     application_fixture(user, status: :applied)

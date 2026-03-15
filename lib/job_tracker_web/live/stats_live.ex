@@ -4,14 +4,28 @@ defmodule JobTrackerWeb.StatsLive do
   alias JobTracker.Pipeline.Status
   alias JobTracker.Stats
 
+  @ranges %{"30" => 30, "90" => 90, "365" => 365}
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :page_title, "Stats")}
   end
 
   @impl true
-  def handle_params(_params, _url, socket) do
-    {:noreply, assign(socket, :summary, Stats.summary(socket.assigns.current_user))}
+  def handle_params(params, _url, socket) do
+    range = if Map.has_key?(@ranges, params["range"]), do: params["range"], else: "all"
+    user = socket.assigns.current_user
+
+    since =
+      case @ranges[range] do
+        nil -> nil
+        days -> Date.add(JobTracker.TimeZones.today(user), -days)
+      end
+
+    {:noreply,
+     socket
+     |> assign(:range, range)
+     |> assign(:summary, Stats.summary(user, since: since))}
   end
 
   defp bar_width(_count, 0), do: 0
@@ -25,6 +39,30 @@ defmodule JobTrackerWeb.StatsLive do
     <.header>
       Stats
       <:subtitle>How your search is going.</:subtitle>
+      <:actions>
+        <nav class="flex gap-1 rounded-lg bg-zinc-100 p-1 text-sm" aria-label="Period">
+          <.link
+            :for={
+              {label, value} <- [
+                {"30 days", "30"},
+                {"90 days", "90"},
+                {"Year", "365"},
+                {"All time", "all"}
+              ]
+            }
+            patch={if value == "all", do: ~p"/stats", else: ~p"/stats?range=#{value}"}
+            class={[
+              "rounded-md px-3 py-1 font-medium",
+              if(@range == value,
+                do: "bg-white text-zinc-900 shadow-sm",
+                else: "text-zinc-600 hover:text-zinc-900"
+              )
+            ]}
+          >
+            {label}
+          </.link>
+        </nav>
+      </:actions>
     </.header>
 
     <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

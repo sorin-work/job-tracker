@@ -21,4 +21,11 @@ defmodule JobTrackerWeb.StatsLiveTest do
     assert lv |> element("#sources") |> render() =~ "Referral"
     assert has_element?(lv, "#weekly")
   end
+
+  test "switches the period", %{conn: conn} do
+    {:ok, lv, _html} = live(conn, ~p"/stats")
+
+    lv |> element("a", "90 days") |> render_click()
+    assert_patch(lv, ~p"/stats?range=90")
+  end
 end

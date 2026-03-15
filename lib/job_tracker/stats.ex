@@ -17,9 +17,10 @@ defmodule JobTracker.Stats do
   ## Options
 
     * `:weeks` - how many weeks the weekly chart covers (default 12)
+    * `:since` - only count applications created on or after this date
   """
   def summary(%User{} = user, opts \\ []) do
-    histories = histories(user)
+    histories = histories(user, opts[:since])
     today = TimeZones.today(user)
 
     %{
@@ -55,7 +56,7 @@ defmodule JobTracker.Stats do
     %{count: count, goal: user.weekly_goal}
   end
 
-  defp histories(user) do
+  defp histories(user, since) do
     applications =
       Repo.all(
         from a in JobApplication,
@@ -68,6 +69,7 @@ defmodule JobTracker.Stats do
             inserted_at: a.inserted_at
           }
       )
+      |> filter_since(since)
 
     ids = Enum.map(applications, & &1.id)
 
@@ -81,5 +83,11 @@ defmodule JobTracker.Stats do
       |> Enum.group_by(&elem(&1, 0), fn {_id, to_status, at} -> {to_status, at} end)
 
     Enum.map(applications, &Map.put(&1, :changes, Map.get(changes, &1.id, [])))
+  end
+
+  defp filter_since(applications, nil), do: applications
+
+  defp filter_since(applications, %Date{} = since) do
+    Enum.filter(applications, &(Date.compare(DateTime.to_date(&1.inserted_at), since) != :lt))
   end
 end
