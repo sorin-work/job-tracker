@@ -51,6 +51,15 @@ defmodule JobTracker.Stats.CalculationsTest do
       assert [%{from_previous: nil, from_applied: 100.0}, %{from_previous: 60.0} | _] = funnel
       assert List.last(funnel).from_applied == 20.0
     end
+
+    test "counts a wishlist item with an application date as submitted" do
+      assert [%{count: 1} | _] =
+               Calculations.funnel([history([:wishlist], applied_on: ~D[2026-03-01])])
+    end
+
+    test "handles no data" do
+      assert Enum.all?(Calculations.funnel([]), &(&1.count == 0 and is_nil(&1.from_applied)))
+    end
   end
 
   describe "response_rate/1" do
