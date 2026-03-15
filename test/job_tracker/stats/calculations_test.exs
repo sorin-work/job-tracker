@@ -71,6 +71,18 @@ defmodule JobTracker.Stats.CalculationsTest do
     end
   end
 
+  test "average_days_to_response/1" do
+    histories = [
+      # responses come 3 days after each step in the helper
+      history([:applied, :screening]),
+      history([:applied, :applied, :rejected]),
+      history([:applied])
+    ]
+
+    assert Calculations.average_days_to_response(histories) == 4.5
+    assert Calculations.average_days_to_response([history([:applied])]) == nil
+  end
+
   describe "weekly_counts/3" do
     test "groups by monday-based weeks and fills empty weeks" do
       dates = [~D[2026-03-02], ~D[2026-03-08], ~D[2026-03-09], nil, ~D[2026-01-05]]
