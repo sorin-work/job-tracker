@@ -38,16 +38,13 @@ defmodule JobTracker.Stats.Calculations do
   the conversion from the previous stage and from applied, as percentages.
   """
   def funnel(histories) do
-    seen =
-      histories
-      |> Enum.filter(&submitted?/1)
-      |> Enum.map(fn history -> [history.status | Enum.map(history.changes, &elem(&1, 0))] end)
-
-    applied = length(seen)
+    ranks = histories |> Enum.filter(&submitted?/1) |> Enum.map(&max(furthest_rank(&1), 1))
+    applied = length(ranks)
 
     {stages, _previous} =
       Enum.map_reduce(@funnel_stages, nil, fn stage, previous ->
-        count = if stage == :applied, do: applied, else: Enum.count(seen, &(stage in &1))
+        rank = Status.rank(stage)
+        count = Enum.count(ranks, &(&1 >= rank))
 
         row = %{
           status: stage,

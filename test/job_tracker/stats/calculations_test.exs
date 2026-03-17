@@ -28,12 +28,12 @@ defmodule JobTracker.Stats.CalculationsTest do
   end
 
   describe "funnel/1" do
-    test "counts applications that reached each stage" do
+    test "counts applications that reached each stage, skipped stages included" do
       histories = [
         history([:applied]),
         history([:applied, :rejected]),
         history([:applied, :screening, :rejected]),
-        history([:applied, :screening, :interviewing]),
+        history([:applied, :interviewing]),
         history([:applied, :screening, :interviewing, :offer, :accepted]),
         history([:wishlist])
       ]
