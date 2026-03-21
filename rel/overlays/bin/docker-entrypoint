@@ -1,0 +1,10 @@
+#!/bin/sh
+# Runs migrations before starting the server. Used as the command of the
+# Docker image.
+set -eu
+
+cd -P -- "$(dirname -- "$0")"
+
+./job_tracker eval "JobTracker.Release.migrate()"
+
+exec ./server
