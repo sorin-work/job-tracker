@@ -23,6 +23,12 @@ defmodule JobTrackerWeb.Router do
     get "/", PageController, :home
   end
 
+  scope "/", JobTrackerWeb do
+    pipe_through :api
+
+    get "/health", HealthController, :show
+  end
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:job_tracker, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
