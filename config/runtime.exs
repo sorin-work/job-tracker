@@ -53,6 +53,10 @@ if config_env() == :prod do
 
   config :job_tracker, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  # Without an SMTP relay configured, emails (confirmation links, password
+  # resets) are written to the log instead of being sent.
+  config :job_tracker, JobTracker.Mailer, adapter: Swoosh.Adapters.Logger, level: :info
+
   config :job_tracker, JobTrackerWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
