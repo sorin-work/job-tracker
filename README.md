@@ -18,10 +18,15 @@ keeps the details, the dates and what you need to do next.
 
 ## Stack
 
-- Elixir 1.18 / OTP 27, Phoenix 1.7 with LiveView and Tailwind
-- PostgreSQL with Ecto migrations
-- Authentication generated with `phx.gen.auth`
-- ExUnit and Phoenix.LiveViewTest, Credo for linting
+| Part     | Tech                                                                 |
+| -------- | -------------------------------------------------------------------- |
+| Language | Elixir 1.18 on OTP 27                                                |
+| Web      | Phoenix 1.7, LiveView (server-rendered), Tailwind CSS, esbuild       |
+| Database | PostgreSQL 17 with Ecto migrations                                   |
+| Auth     | `phx.gen.auth` (bcrypt, session tokens, email confirmation)          |
+| Tests    | ExUnit, Phoenix.LiveViewTest, Ecto SQL sandbox                       |
+| Lint     | `mix format --check-formatted`, Credo (strict)                       |
+| Ops      | `mix release`, multi-stage Dockerfile, Docker Compose, GitHub Actions |
 
 ## Running with Docker
 
