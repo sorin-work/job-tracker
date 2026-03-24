@@ -24,6 +24,8 @@ services:
       DATABASE_URL: ecto://${POSTGRES_USER:-job_tracker}:${POSTGRES_PASSWORD:-job_tracker}@db:5432/${POSTGRES_DB:-job_tracker}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-local-development-secret-change-me-local-development-secret-change-me}
       PHX_HOST: ${PHX_HOST:-localhost}
+      PHX_SCHEME: ${PHX_SCHEME:-http}
+      PHX_URL_PORT: ${APP_PORT:-4408}
       PORT: 4000
     depends_on:
       db:
