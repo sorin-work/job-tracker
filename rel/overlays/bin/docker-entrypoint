@@ -1,10 +1,14 @@
 #!/bin/sh
-# Runs migrations before starting the server. Used as the command of the
-# Docker image.
+# Runs migrations (and the demo seed when SEED_DEMO=true) before starting the
+# server. Used as the command of the Docker image.
 set -eu
 
 cd -P -- "$(dirname -- "$0")"
 
 ./job_tracker eval "JobTracker.Release.migrate()"
+
+if [ "${SEED_DEMO:-false}" = "true" ]; then
+  ./job_tracker eval "JobTracker.Release.seed_demo()"
+fi
 
 exec ./server

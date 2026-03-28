@@ -42,6 +42,12 @@ mix setup               # deps, database, migrations, assets
 mix phx.server          # http://localhost:4000
 ```
 
+To create the demo account locally:
+
+```bash
+SEED_DEMO=true mix run priv/repo/seeds.exs
+```
+
 ## Tests and lint
 
 ```bash
