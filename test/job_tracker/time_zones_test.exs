@@ -12,6 +12,18 @@ defmodule JobTracker.TimeZonesTest do
              ~U[2026-01-01 09:00:00Z]
   end
 
+  test "from_local/2 moves times in a daylight saving gap forward" do
+    # Clocks in Berlin jump from 02:00 to 03:00 on March 29, 2026.
+    assert TimeZones.from_local(~N[2026-03-29 02:30:00], "Europe/Berlin") ==
+             ~U[2026-03-29 01:00:00Z]
+  end
+
+  test "from_local/2 picks the first of two ambiguous times" do
+    # 02:30 happens twice in Berlin on October 25, 2026.
+    assert TimeZones.from_local(~N[2026-10-25 02:30:00], "Europe/Berlin") ==
+             ~U[2026-10-25 00:30:00Z]
+  end
+
   test "to_local/2 shifts into the user's zone" do
     user = %User{time_zone: "Asia/Tokyo"}
     local = TimeZones.to_local(~U[2026-05-01 23:00:00Z], user)

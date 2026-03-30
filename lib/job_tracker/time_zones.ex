@@ -76,12 +76,20 @@ defmodule JobTracker.TimeZones do
 
   @doc """
   Interprets a wall-clock time in the given zone and returns it in UTC.
+
+  Times that fall in a daylight saving gap are moved forward to the first valid
+  time, ambiguous times (the hour that repeats in autumn) use the earlier one.
   """
   def from_local(%NaiveDateTime{} = naive, zone) do
-    naive
-    |> DateTime.from_naive!(zone)
-    |> DateTime.shift_zone!("Etc/UTC")
-    |> DateTime.truncate(:second)
+    result =
+      case DateTime.from_naive(naive, zone) do
+        {:ok, datetime} -> datetime
+        {:ambiguous, first, _second} -> first
+        {:gap, _before, just_after} -> just_after
+        {:error, _} -> DateTime.from_naive!(naive, "Etc/UTC")
+      end
+
+    result |> DateTime.shift_zone!("Etc/UTC") |> DateTime.truncate(:second)
   end
 
   @doc """
