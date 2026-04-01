@@ -60,6 +60,14 @@ mix setup               # deps, database, migrations, assets
 mix phx.server          # http://localhost:4000
 ```
 
+To use Postgres from the Docker setup, start only the database and point the
+app at it:
+
+```bash
+docker compose up -d db
+DB_HOST=localhost DB_PORT=5448 mix setup
+```
+
 To create the demo account locally:
 
 ```bash
