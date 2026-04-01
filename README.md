@@ -30,7 +30,25 @@ keeps the details, the dates and what you need to do next.
 
 ## Running with Docker
 
-Not yet, see below for running it locally.
+```bash
+cp .env.example .env    # optional, the defaults work
+docker compose up --build
+```
+
+Open <http://localhost:4408> and log in as **demo@example.com** /
+**demo-password**. The demo account is created on the first start with a few
+months of applications, interviews and reminders. Set `SEED_DEMO=false` in
+`.env` to skip it.
+
+The `app` container runs the migrations on start and has a healthcheck on
+`/health`. Postgres is published on port 5448 for local tools. Both ports can
+be changed with `APP_PORT` and `DB_PORT` in `.env`.
+
+To start over with an empty database:
+
+```bash
+docker compose down -v
+```
 
 ## Running locally
 
