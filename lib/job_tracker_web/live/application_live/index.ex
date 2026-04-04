@@ -98,6 +98,12 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
         {@result.total} {if @result.total == 1, do: "application", else: "applications"}
       </:subtitle>
       <:actions>
+        <.link
+          href={~p"/export/applications.csv"}
+          class="text-sm font-medium text-zinc-600 hover:text-zinc-900"
+        >
+          <.icon name="hero-arrow-down-tray" class="h-4 w-4" /> Export CSV
+        </.link>
         <.link navigate={~p"/tags"} class="ml-4 text-sm font-medium text-zinc-600 hover:text-zinc-900">
           Manage tags
         </.link>

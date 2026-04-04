@@ -106,6 +106,8 @@ defmodule JobTrackerWeb.Router do
 
       live "/stats", StatsLive, :index
     end
+
+    get "/export/applications.csv", ExportController, :applications
   end
 
   scope "/", JobTrackerWeb do
