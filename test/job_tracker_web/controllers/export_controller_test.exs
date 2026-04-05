@@ -12,7 +12,7 @@ defmodule JobTrackerWeb.ExportControllerTest do
 
     assert response_content_type(conn, :csv) =~ "text/csv"
     assert [disposition] = get_resp_header(conn, "content-disposition")
-    assert disposition =~ ~s(filename="applications.csv")
+    assert disposition =~ ~r/attachment; filename="applications-\d{4}-\d{2}-\d{2}\.csv"/
     assert response(conn, 200) =~ "Platform Engineer"
   end
 

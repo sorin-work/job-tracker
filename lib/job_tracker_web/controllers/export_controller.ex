@@ -2,10 +2,11 @@ defmodule JobTrackerWeb.ExportController do
   use JobTrackerWeb, :controller
 
   alias JobTracker.Export
+  alias JobTracker.TimeZones
 
   def applications(conn, _params) do
     user = conn.assigns.current_user
-    filename = "applications.csv"
+    filename = "applications-#{Date.to_iso8601(TimeZones.today(user))}.csv"
 
     conn
     |> put_resp_content_type("text/csv")
