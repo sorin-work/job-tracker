@@ -15,4 +15,9 @@ defmodule JobTrackerWeb.ExportControllerTest do
     assert disposition =~ ~s(filename="applications.csv")
     assert response(conn, 200) =~ "Platform Engineer"
   end
+
+  test "requires a logged in user" do
+    conn = get(build_conn(), ~p"/export/applications.csv")
+    assert redirected_to(conn) == ~p"/users/log_in"
+  end
 end
