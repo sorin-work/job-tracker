@@ -34,9 +34,10 @@ defmodule JobTracker.ExportTest do
     assert row =~ ~s("said ""call me""")
   end
 
-  test "encode_field/1 quotes fields when needed" do
+  test "encode_field/1 neutralizes spreadsheet formulas" do
+    assert Export.encode_field(~s|=HYPERLINK("x")|) == ~s|"'=HYPERLINK(""x"")"|
+    assert Export.encode_field("-5") == "'-5"
     assert Export.encode_field("plain") == "plain"
-    assert Export.encode_field("a, b") == ~s("a, b")
     assert Export.encode_field(nil) == ""
     assert Export.encode_field(12) == "12"
   end

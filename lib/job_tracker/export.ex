@@ -56,12 +56,15 @@ defmodule JobTracker.Export do
   defp encode_row(fields), do: [Enum.map_intersperse(fields, ",", &encode_field/1), "\r\n"]
 
   @doc """
-  Quotes a field when it contains a comma, a quote or a line break.
+  Quotes a field when needed and stops spreadsheet apps from treating text
+  that starts with `=`, `+`, `-` or `@` as a formula.
   """
   def encode_field(nil), do: ""
   def encode_field(value) when is_integer(value), do: Integer.to_string(value)
 
   def encode_field(value) when is_binary(value) do
+    value = if String.match?(value, ~r/^[=+\-@\t\r]/), do: "'" <> value, else: value
+
     if String.contains?(value, [",", "\"", "\n", "\r"]) do
       ~s(") <> String.replace(value, ~s("), ~s("")) <> ~s(")
     else
