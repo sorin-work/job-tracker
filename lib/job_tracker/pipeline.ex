@@ -190,13 +190,19 @@ defmodule JobTracker.Pipeline do
 
   @doc """
   Applications grouped by status for the board, each column ordered by its
-  position.
+  position. Closed applications that haven't changed in `closed_after_days`
+  days (30 by default) are left out to keep the board short.
   """
-  def board(%User{} = user) do
+  def board(%User{} = user, opts \\ []) do
+    closed_after_days = Keyword.get(opts, :closed_after_days, 30)
+    cutoff = DateTime.add(DateTime.utc_now(), -closed_after_days, :day)
+    closed = Status.closed()
+
     applications =
       Repo.all(
         from a in JobApplication,
           where: a.user_id == ^user.id,
+          where: a.status not in ^closed or a.updated_at >= ^cutoff,
           order_by: [asc: a.position, desc: a.updated_at],
           preload: [:company, :tags]
       )

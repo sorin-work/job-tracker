@@ -252,6 +252,19 @@ defmodule JobTracker.PipelineTest do
       board = Pipeline.board(user)
       assert Map.keys(board) |> Enum.sort() == Enum.sort(JobTracker.Pipeline.Status.all())
     end
+
+    test "leaves out applications closed a long time ago", %{user: user} do
+      old = application_fixture(user, status: :rejected)
+      recent = application_fixture(user, status: :rejected)
+      long_ago = DateTime.add(DateTime.utc_now(:second), -40, :day)
+
+      Repo.update_all(from(a in JobApplication, where: a.id == ^old.id),
+        set: [updated_at: long_ago]
+      )
+
+      assert [%{id: id}] = Pipeline.board(user).rejected
+      assert id == recent.id
+    end
   end
 
   describe "search_applications/2" do
