@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-04-12
+
+- Stats page: funnel, response rate, time to first response, applications per
+  week, results by source and outcomes, for a chosen period.
+- Weekly goal on the dashboard.
+- CSV export of all applications.
+- Docker setup with a release, migrations on start and a health endpoint.
+- Demo account with sample data (`SEED_DEMO=true`).
+- Closed applications drop off the board after 30 days.
+- Fixed: interviews at a time skipped by daylight saving crashed the form.
+- Fixed: CSV cells starting with `=` could be run as formulas.
+
 ## 0.2.0 - 2026-03-01
 
 - Contacts at companies.
