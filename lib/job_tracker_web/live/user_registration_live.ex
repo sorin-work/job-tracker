@@ -47,7 +47,7 @@ defmodule JobTrackerWeb.UserRegistrationLive do
 
     socket =
       socket
-      |> assign(trigger_submit: false, check_errors: false)
+      |> assign(trigger_submit: false, check_errors: false, page_title: "Sign up")
       |> assign_form(changeset)
 
     {:ok, socket, temporary_assigns: [form: nil]}
