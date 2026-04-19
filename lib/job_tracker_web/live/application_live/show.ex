@@ -426,7 +426,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
         <button
           type="button"
           phx-click="delete"
-          data-confirm="Delete this application?"
+          data-confirm="Delete this application with its interviews, reminders and history?"
           class="text-sm font-medium text-red-600 hover:text-red-800"
         >
           Delete application
