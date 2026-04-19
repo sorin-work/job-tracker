@@ -118,6 +118,7 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
         |> render_submit()
 
       assert html =~ "Moved to Screening"
+      assert lv |> element("#timeline") |> render() =~ "Recruiter called"
     end
 
     test "edits the application", %{conn: conn, application: application} do

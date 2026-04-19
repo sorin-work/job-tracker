@@ -314,6 +314,7 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
                   <p :if={event.from} class="text-zinc-800">
                     <.status_badge status={event.from} /> → <.status_badge status={event.to} />
                   </p>
+                  <p :if={event.note} class="mt-0.5 text-zinc-600">{event.note}</p>
                 <% :interview -> %>
                   <p class="text-zinc-800">
                     {Interview.kind_label(event.interview.kind)} interview
