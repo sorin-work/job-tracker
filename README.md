@@ -8,12 +8,18 @@ keeps the details, the dates and what you need to do next.
 ## Features
 
 - **Pipeline board**: wishlist, applied, screening, interviewing, offer, and
-  accepted / rejected / withdrawn. Drag cards between columns.
+  accepted / rejected / withdrawn. Drag cards between columns or within a column.
 - **Table view** with search, status and tag filters, sorting and pagination.
 - **Applications**: company, role, location, work mode, source, priority, salary
   range, the job posting URL and a snapshot of the job description.
-- **Timeline** of status changes for each application.
-- **Companies** with their applications.
+- **Timeline** of status changes and interviews for each application.
+- **Companies and contacts** next to the applications for them.
+- **Interviews** with date and time in your time zone, type, prep notes and
+  how it went.
+- **Reminders** for follow-ups, with the ones due today and overdue on the
+  dashboard.
+- **Stats**: funnel conversion, response rate, time to first response and
+  applications per week.
 - **Accounts** with email confirmation and password reset.
 
 ## Stack
