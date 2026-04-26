@@ -58,6 +58,13 @@ defmodule JobTracker.CompaniesTest do
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
 
+    test "rejects invalid websites", %{user: user} do
+      assert {:error, changeset} =
+               Companies.create_company(user, %{name: "Acme", website: "not a url"})
+
+      assert %{website: ["must be a valid URL"]} = errors_on(changeset)
+    end
+
     test "names are unique per user regardless of case", %{user: user} do
       company_fixture(user, name: "Acme")
       assert {:error, changeset} = Companies.create_company(user, %{name: "ACME"})
