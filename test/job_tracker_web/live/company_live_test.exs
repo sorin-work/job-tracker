@@ -54,6 +54,14 @@ defmodule JobTrackerWeb.CompanyLiveTest do
     assert html =~ "still has applications"
   end
 
+  test "deletes a company", %{conn: conn, user: user} do
+    company = company_fixture(user, name: "Initech")
+    {:ok, lv, _html} = live(conn, ~p"/companies")
+
+    lv |> element("#companies-#{company.id} a", "Delete") |> render_click()
+    refute has_element?(lv, "#companies-#{company.id}")
+  end
+
   test "shows a company with its applications and contacts", %{conn: conn, user: user} do
     company = company_fixture(user, name: "Initech", notes: "Great snacks")
     application_fixture(user, company_id: company.id, title: "Printer Engineer")
