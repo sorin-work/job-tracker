@@ -109,6 +109,12 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       assert lv |> element("#timeline") |> render() =~ "Added as"
     end
 
+    test "can't see another user's application", %{conn: conn} do
+      other = application_fixture(JobTracker.AccountsFixtures.user_fixture())
+
+      assert_raise Ecto.NoResultsError, fn -> live(conn, ~p"/applications/#{other}") end
+    end
+
     test "changes the status with a note", %{conn: conn, application: application} do
       {:ok, lv, _html} = live(conn, ~p"/applications/#{application}")
 
@@ -188,6 +194,18 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
 
       lv |> element("#reminder-#{reminder.id} input") |> render_click()
       assert JobTracker.Reminders.get_reminder!(user, reminder.id).completed_at
+    end
+
+    test "deletes the application", %{conn: conn, application: application} do
+      {:ok, lv, _html} = live(conn, ~p"/applications/#{application}")
+
+      {:ok, _lv, html} =
+        lv
+        |> element("button", "Delete application")
+        |> render_click()
+        |> follow_redirect(conn, ~p"/applications")
+
+      assert html =~ "Application deleted"
     end
   end
 
