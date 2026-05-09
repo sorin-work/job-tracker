@@ -57,7 +57,7 @@ defmodule JobTracker.Pipeline do
     query = base_query(user, opts)
     total = Repo.aggregate(query, :count)
     total_pages = max(div(total + @per_page - 1, @per_page), 1)
-    page = params["page"] |> parse_id() |> Kernel.||(1)
+    page = params["page"] |> parse_id() |> Kernel.||(1) |> min(total_pages)
 
     entries =
       query

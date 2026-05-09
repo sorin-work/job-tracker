@@ -328,6 +328,7 @@ defmodule JobTracker.PipelineTest do
       second = Pipeline.search_applications(user, %{"page" => "2"})
       assert length(second.entries) == 2
 
+      assert Pipeline.search_applications(user, %{"page" => "9"}).page == 2
       assert Pipeline.search_applications(user, %{"page" => "x"}).page == 1
     end
   end
