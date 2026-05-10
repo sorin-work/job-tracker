@@ -86,6 +86,10 @@ SEED_DEMO=true mix run priv/repo/seeds.exs
 mix test
 mix lint                # format check and credo --strict
 ```
+The tests need a running Postgres (the same one as for development works).
+Context tests cover the business rules (pipeline moves and history, funnel and
+response rate maths, time zones, reminders), and LiveView tests drive every
+page.
 
 ## License
 
