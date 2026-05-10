@@ -22,6 +22,11 @@ defmodule JobTrackerWeb.ApplicationLiveTest do
       refute html =~ "Someone else&#39;s job"
     end
 
+    test "shows a hint when there are no applications", %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/applications")
+      assert html =~ "Add your first application"
+    end
+
     test "filters by search text and status", %{conn: conn, user: user} do
       application_fixture(user, title: "Backend Engineer", status: :applied)
       application_fixture(user, title: "Designer", status: :wishlist)
