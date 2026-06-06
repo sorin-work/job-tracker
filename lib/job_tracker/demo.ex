@@ -177,7 +177,7 @@ defmodule JobTracker.Demo do
     tags = insert_tags(user)
     applications = insert_applications(user, companies, tags, today)
     insert_contacts(user, companies, today)
-    insert_interviews(applications, today)
+    insert_interviews(user, applications, today)
     insert_reminders(user, applications, today)
     user
   end
@@ -342,7 +342,7 @@ defmodule JobTracker.Demo do
     end)
   end
 
-  defp insert_interviews(applications, today) do
+  defp insert_interviews(user, applications, today) do
     by_title = Map.new(applications, &{{&1.company.name, &1.title}, &1})
 
     [
@@ -371,7 +371,7 @@ defmodule JobTracker.Demo do
 
       Repo.insert!(%Interview{
         job_application_id: application.id,
-        scheduled_at: at(Date.add(today, day), hour),
+        scheduled_at: local_time(user, Date.add(today, day), hour),
         duration_minutes: minutes,
         kind: kind,
         outcome: outcome,
@@ -381,6 +381,12 @@ defmodule JobTracker.Demo do
         feedback: feedback(outcome)
       })
     end)
+  end
+
+  # Interviews start on the hour or half past in the demo user's time zone.
+  defp local_time(user, date, hour) do
+    naive = NaiveDateTime.new!(date, Time.new!(hour, rem(hour, 2) * 30, 0))
+    JobTracker.TimeZones.from_local(naive, user.time_zone)
   end
 
   defp interviewers(:recruiter), do: "Recruiter"
