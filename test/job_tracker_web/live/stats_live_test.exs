@@ -28,4 +28,9 @@ defmodule JobTrackerWeb.StatsLiveTest do
     lv |> element("a", "90 days") |> render_click()
     assert_patch(lv, ~p"/stats?range=90")
   end
+
+  test "has an empty state", %{conn: conn} do
+    {:ok, _lv, html} = live(conn, ~p"/stats?range=bogus")
+    assert html =~ "Submit an application to see the funnel."
+  end
 end
