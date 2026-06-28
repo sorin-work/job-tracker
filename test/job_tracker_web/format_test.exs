@@ -28,6 +28,12 @@ defmodule JobTrackerWeb.FormatTest do
     assert Format.datetime(~U[2026-03-03 20:30:00Z], user) == "Tue, Mar 3 · 2:30 PM"
   end
 
+  test "date helpers" do
+    assert Format.date(~D[2026-03-04]) == "Mar 4, 2026"
+    assert Format.short_date(~D[2026-03-04]) == "Mar 4"
+    assert Format.date(nil) == "—"
+  end
+
   test "percent/1 and label/1" do
     assert Format.percent(50.0) == "50%"
     assert Format.percent(33.3) == "33.3%"
