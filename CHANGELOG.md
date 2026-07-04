@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - 2026-07-04
+
+- Indexes for due reminders, interviews and application dates.
+- Fixed: the applications table showed an empty page past the last one.
+- Fixed: demo interviews started at odd minutes.
+- Dependency updates and dependabot.
+
 ## 0.3.0 - 2026-04-12
 
 - Stats page: funnel, response rate, time to first response, applications per
