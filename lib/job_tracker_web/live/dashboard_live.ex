@@ -91,9 +91,7 @@ defmodule JobTrackerWeb.DashboardLive do
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
       <.panel id="due-reminders" title="Due today and overdue">
         <:actions>
-          <.link navigate={~p"/reminders"} class="font-medium text-zinc-600 hover:text-zinc-900">
-            All reminders
-          </.link>
+          <.link navigate={~p"/reminders"} class="font-medium text-zinc-600 hover:text-zinc-900">All reminders</.link>
         </:actions>
         <.empty_state :if={@due == []}>Nothing due. Nice.</.empty_state>
         <ul class="divide-y divide-zinc-100">
@@ -143,9 +141,7 @@ defmodule JobTrackerWeb.DashboardLive do
 
       <.panel id="upcoming-interviews" title="Interviews in the next 7 days">
         <:actions>
-          <.link navigate={~p"/interviews"} class="font-medium text-zinc-600 hover:text-zinc-900">
-            All interviews
-          </.link>
+          <.link navigate={~p"/interviews"} class="font-medium text-zinc-600 hover:text-zinc-900">All interviews</.link>
         </:actions>
         <.empty_state :if={@upcoming == []}>No interviews coming up.</.empty_state>
         <ul class="divide-y divide-zinc-100">
@@ -168,9 +164,7 @@ defmodule JobTrackerWeb.DashboardLive do
 
     <.panel title="Pipeline" class="mt-6">
       <:actions>
-        <.link navigate={~p"/board"} class="font-medium text-zinc-600 hover:text-zinc-900">
-          Open board
-        </.link>
+        <.link navigate={~p"/board"} class="font-medium text-zinc-600 hover:text-zinc-900">Open board</.link>
       </:actions>
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         <.link

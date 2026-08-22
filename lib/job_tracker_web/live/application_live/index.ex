@@ -155,9 +155,7 @@ defmodule JobTrackerWeb.ApplicationLive.Index do
       <.empty_state :if={filtered?(@filters)}>No applications match these filters.</.empty_state>
       <.empty_state :if={!filtered?(@filters)}>
         Nothing here yet.
-        <.link patch={~p"/applications/new"} class="font-medium text-brand">
-          Add your first application
-        </.link>
+        <.link patch={~p"/applications/new"} class="font-medium text-brand">Add your first application</.link>
         or save one from a posting you liked.
       </.empty_state>
     </div>

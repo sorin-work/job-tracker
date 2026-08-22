@@ -107,12 +107,10 @@ defmodule JobTrackerWeb.ReminderLive.Index do
               {reminder.title}
             </p>
             <p class="text-xs">
-              <span class={@tone}>
-                {Format.short_date(reminder.due_on)} · {Format.due(
-                  reminder.due_on,
-                  @today
-                )}
-              </span>
+              <span class={@tone}>{Format.short_date(reminder.due_on)} · {Format.due(
+                reminder.due_on,
+                @today
+              )}</span>
               <.link
                 :if={reminder.job_application}
                 navigate={~p"/applications/#{reminder.job_application}"}
@@ -135,9 +133,7 @@ defmodule JobTrackerWeb.ReminderLive.Index do
             >
               Snooze a day
             </button>
-            <.link patch={~p"/reminders/#{reminder}/edit"} class="text-zinc-600 hover:text-zinc-900">
-              Edit
-            </.link>
+            <.link patch={~p"/reminders/#{reminder}/edit"} class="text-zinc-600 hover:text-zinc-900">Edit</.link>
             <button
               phx-click="delete"
               phx-value-id={reminder.id}

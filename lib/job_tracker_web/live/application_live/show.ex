@@ -261,9 +261,9 @@ defmodule JobTrackerWeb.ApplicationLive.Show do
                 <div>
                   <p class="font-medium text-zinc-900">
                     {Interview.kind_label(interview.kind)}
-                    <span class="ml-2 text-xs font-normal text-zinc-500">
-                      {Format.label(interview.outcome)}
-                    </span>
+                    <span class="ml-2 text-xs font-normal text-zinc-500">{Format.label(
+                      interview.outcome
+                    )}</span>
                   </p>
                   <p class="text-sm text-zinc-600">
                     {Format.datetime(interview.scheduled_at, @current_user)} · {interview.duration_minutes} min

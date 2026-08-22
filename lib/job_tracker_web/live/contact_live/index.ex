@@ -109,9 +109,7 @@ defmodule JobTrackerWeb.ContactLive.Index do
         <span :if={!contact.company}>—</span>
       </:col>
       <:col :let={contact} label="Email">
-        <a :if={contact.email} href={"mailto:#{contact.email}"} class="text-brand hover:underline">
-          {contact.email}
-        </a>
+        <a :if={contact.email} href={"mailto:#{contact.email}"} class="text-brand hover:underline">{contact.email}</a>
       </:col>
       <:col :let={contact} label="Phone">{contact.phone}</:col>
       <:col :let={contact} label="Last contacted">{Format.date(contact.last_contacted_on)}</:col>
@@ -121,9 +119,7 @@ defmodule JobTrackerWeb.ContactLive.Index do
           href={contact.linkedin_url}
           target="_blank"
           rel="noopener noreferrer"
-        >
-          LinkedIn
-        </a>
+        >LinkedIn</a>
       </:action>
       <:action :let={contact}>
         <.link patch={~p"/contacts/#{contact}/edit"}>Edit</.link>

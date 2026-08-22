@@ -88,9 +88,7 @@ defmodule JobTrackerWeb.CompanyLive.Show do
 
       <.panel id="company-contacts" title="Contacts">
         <:actions>
-          <.link navigate={~p"/contacts/new?company_id=#{@company.id}"} class="font-medium text-brand">
-            Add
-          </.link>
+          <.link navigate={~p"/contacts/new?company_id=#{@company.id}"} class="font-medium text-brand">Add</.link>
         </:actions>
         <.empty_state :if={@contacts == []}>No contacts yet.</.empty_state>
         <ul class="space-y-3 text-sm">
