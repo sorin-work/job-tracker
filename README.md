@@ -8,19 +8,31 @@ keeps the details, the dates and what you need to do next.
 ## Features
 
 - **Pipeline board**: wishlist, applied, screening, interviewing, offer, and
-  accepted / rejected / withdrawn. Drag cards between columns or within a column.
-- **Table view** with search, status and tag filters, sorting and pagination.
-- **Applications**: company, role, location, work mode, source, priority, salary
-  range, the job posting URL and a snapshot of the job description.
-- **Timeline** of status changes and interviews for each application.
-- **Companies and contacts** next to the applications for them.
-- **Interviews** with date and time in your time zone, type, prep notes and
-  how it went.
-- **Reminders** for follow-ups, with the ones due today and overdue on the
-  dashboard.
-- **Stats**: funnel conversion, response rate, time to first response and
-  applications per week.
-- **Accounts** with email confirmation and password reset.
+  accepted / rejected / withdrawn. Drag cards between columns or within a column
+  to reorder them. Closed applications drop off the board after 30 days.
+- **Table view** with search, status and tag filters, sorting on every column,
+  pagination and a CSV export.
+- **Applications**: company, role, location, work mode (on-site / hybrid /
+  remote), source, priority, salary range and currency, the job posting URL and
+  a snapshot of the job description, in case the posting disappears.
+- **Timeline**: every status change is recorded with an optional note, and shown
+  together with the interviews for that application.
+- **Companies and contacts**: recruiters, hiring managers and referrals, linked
+  to their company and shown next to the applications for it.
+- **Interviews**: date and time in your own time zone, duration, type (phone
+  screen, technical, system design, onsite...), who you're meeting, prep notes
+  and how it went.
+- **Reminders**: follow-ups due today and overdue on the dashboard and in the
+  navigation bar, with snooze and quick dates. When you apply, a follow-up can
+  be added automatically after the number of days you choose.
+- **Tags** with colours, created as you type them and managed on their own page.
+- **Stats**: funnel conversion from applied to accepted, response rate, average
+  time to the first response, applications per week, results by source and
+  outcomes, for the last 30 / 90 / 365 days or all time.
+- **Dashboard** with open applications, interviews in the next 7 days, due
+  reminders and progress towards a weekly applications goal.
+- **Accounts**: sign up, log in, email confirmation, password reset, and
+  settings for time zone, weekly goal and follow-up days.
 
 ## Stack
 
