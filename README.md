@@ -146,6 +146,24 @@ Context tests cover the business rules (pipeline moves and history, funnel and
 response rate maths, time zones, reminders), and LiveView tests drive every
 page.
 
+## Configuration
+
+Only needed when running the release yourself; Docker Compose sets them all.
+
+| Variable          | Default                  | Meaning                                         |
+| ----------------- | ------------------------ | ----------------------------------------------- |
+| `DATABASE_URL`    | (required)               | `ecto://user:password@host/database`            |
+| `SECRET_KEY_BASE` | (required)               | Signs and encrypts sessions, 64+ characters     |
+| `PHX_HOST`        | `example.com`            | Host the app is served at                       |
+| `PHX_SCHEME`      | `https`                  | Scheme used in generated links                  |
+| `PHX_URL_PORT`    | `443`                    | Port used in generated links                    |
+| `PORT`            | `4000`                   | Port the server listens on                      |
+| `POOL_SIZE`       | `10`                     | Database connections                            |
+| `SEED_DEMO`       | `false` (`true` in Compose) | Create the demo account on start             |
+
+Emails (confirmation and password reset links) are written to the log in
+production; in development they show up at `/dev/mailbox`.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
