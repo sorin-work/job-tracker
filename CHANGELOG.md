@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0 - 2026-11-08
+
+- Updated to Phoenix LiveView 1.2 and newer Elixir and Debian base images.
+- Architecture notes and a configuration reference in the README.
+- Dependency updates.
+
 ## 0.4.0 - 2026-07-04
 
 - Indexes for due reminders, interviews and application dates.
