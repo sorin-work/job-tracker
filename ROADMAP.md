@@ -624,3 +624,83 @@ drop does not work on touch screens.
   top, and use the move menu from 6 instead of dragging.
 - Check the table, application page and forms at 360px wide.
 - Tests: none beyond the move menu tests from 6; this is layout.
+
+## Maybe
+
+### 32. Fetch the job description from the posting
+
+Postings disappear, which is why the app keeps a description snapshot, but
+the user has to paste it.
+
+- A "Fetch" button next to the posting URL that downloads the page with Finch
+  (already a dependency) and fills the description, using the
+  `JobPosting` JSON-LD block when the page has one (most job boards do) and
+  the readable text otherwise.
+- Tricky: this makes the server fetch URLs typed by users, which is a server
+  side request forgery risk on any shared install. Resolve the host first and
+  refuse private, loopback and link local addresses, allow only ports 80 and
+  443, follow at most three redirects with the same check, cap the size and
+  time. Off unless `ALLOW_POSTING_FETCH=true`.
+- Tricky: many boards block scripted requests or render with JavaScript only.
+  It will work for some sites and not others; the paste box stays.
+- Why maybe: the security cost is real for a feature that saves one paste.
+
+### 33. Interview prep checklists
+
+Prep notes are a single text field. People reuse the same preparation per
+interview kind: research the company, prepare three stories, questions to
+ask.
+
+- Checklist templates per interview kind, edited in settings, copied onto a
+  new interview as ticked or unticked items.
+- A personal question bank (questions asked, my answer, tags) linked from
+  interviews where the question came up.
+- Why maybe: it overlaps with note taking apps people already use.
+
+### 34. Read-only share link for a mentor
+
+Career coaches and friends helping with a search ask for a view of the
+pipeline.
+
+- A revocable link that shows the board and stats, without contacts, notes or
+  salaries unless the user ticks them.
+- Tricky: getting the "what is hidden" choice right everywhere the data shows
+  up; it touches every page component.
+- Why maybe: it is a sharing model in a single user app, with privacy risks if
+  any page forgets the filter.
+
+### 35. Custom stages
+
+The eight statuses are fixed in `Pipeline.Status`. Some searches have extra
+steps (a take home stage, references, background check) or call them
+differently.
+
+- Let users rename the open stages and add stages between screening and
+  offer, each mapped to one of the fixed funnel stages so the stats keep
+  working.
+- Tricky: statuses are an `Ecto.Enum` on two tables, the stats rely on the
+  fixed progression (`Status.rank/1`), and the board columns come from
+  `Status.all/0`. It is a large change for a small gain; renaming labels alone
+  would be much cheaper.
+- Why maybe: most people are fine with the standard stages.
+
+### 36. Several searches in one account
+
+A search ends with an accepted offer. Two years later the same person starts
+again and wants a clean board without losing the old data.
+
+- A `searches` table, every application belongs to one, a switcher in the
+  navigation, stats per search.
+- Today the archive (15) and the period filter on stats get most of the way.
+- Why maybe: it adds a scope to every query in every context.
+
+### 37. Browser tests for drag and drop
+
+The board hook is the only JavaScript and the only thing the LiveView tests
+cannot reach: they send the `move` event directly.
+
+- Wallaby or Playwright driving a real browser through one drag, one reorder
+  and one move menu action (6).
+- Why maybe: a browser in CI makes it slower and flakier for a hook that
+  changes rarely. A small Playwright job that only runs when
+  `assets/js/hooks` changes would limit the cost.
