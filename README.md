@@ -164,6 +164,11 @@ Only needed when running the release yourself; Docker Compose sets them all.
 Emails (confirmation and password reset links) are written to the log in
 production; in development they show up at `/dev/mailbox`.
 
+## Roadmap
+
+Ideas for what might come next, with design notes, are in
+[ROADMAP.md](ROADMAP.md).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
